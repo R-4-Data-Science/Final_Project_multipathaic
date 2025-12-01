@@ -1,0 +1,30 @@
+Package: multipathaic
+Type: Package
+Title: Multi-Path Stepwise Selection with AIC and Stability Analysis
+Version: 1.0.0
+Authors@R: c(
+    person("Michael (Asante) ", "Ofosu", email = "mao0049@auburn.edu", role = c("aut", "cre")),
+    person("Mohammad ", "Al Srayheen", email = "member2@auburn.edu", role = "aut"),
+    person("Soroosh ", "Alavi", email = "member3@auburn.edu", role = "aut"))
+Description: Implements a multi-path forward selection procedure based on the 
+    Akaike Information Criterion (AIC). Instead of following a single best path,
+    this package explores multiple promising model paths simultaneously, evaluates
+    their stability through resampling, and identifies plausible models that are
+    both statistically sound (low AIC) and reliable (built from stable predictors).
+    Supports both linear and logistic regression.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    stats
+Suggests: 
+    knitr,
+    rmarkdown,
+    ggplot2,
+    dplyr,
+    tidyr
+VignetteBuilder: knitr
