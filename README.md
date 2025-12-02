@@ -1,55 +1,46 @@
-###############################################################################
-# multipathaic
-#
-# Multi-Path Forward Selection with AIC and Stability Analysis
-###############################################################################
 
+````markdown
+# multipathaic  
+*A Multi-Path AIC Model Selection Framework with Stability Analysis*
 
-###############################################################################
-# OVERVIEW
-###############################################################################
-#
-# `multipathaic` implements a novel and robust approach to model selection by
-# exploring multiple promising paths through the model space, rather than
-# following a single greedy forward-selection sequence.
-#
-# The package provides:
-#
-# - Multi-path forward selection driven by AIC
-# - Bootstrap-based stability analysis
-# - Plausible model identification through combined AIC and stability thresholds
-# - Advanced publication-quality visualizations (model trees, heatmaps,
-#   dashboards, importance rankings)
-#
-# This framework enhances transparency, robustness, and interpretability in
-# variable selection.
-#
-###############################################################################
+`multipathaic` provides a robust alternative to traditional stepwise selection by exploring **multiple forward-selection paths** simultaneously and combining **AIC** with **bootstrap stability**. The package is designed for researchers who want transparent, reproducible, and interpretable model-selection workflows.
 
+---
 
-###############################################################################
-# INSTALLATION
-###############################################################################
-#
-# Install directly from GitHub:
-#
-# install.packages("remotes")    # Install remotes if needed
-# remotes::install_github("R-4-Data-Science/Final_Project_multipathaic")
-#
-# Load the package:
-#
-# library(multipathaic)
-#
-###############################################################################
+## 🔹 Key Features
 
+- Multi-path forward selection driven by **AIC**
+- **Bootstrap-based stability analysis**
+- Identification of **plausible models** using AIC and stability thresholds
+- Publication-quality visualizations:
+  - Model tree
+  - Variable co-occurrence heatmap
+  - Stability plots
+  - Importance rankings
+- Fully integrated **Shiny dashboard** for interactive exploration
+- Supports **linear** and **logistic** regression
 
-###############################################################################
-# QUICK START (COPY AND RUN THIS BLOCK)
-###############################################################################
+---
+
+## 🔹 Installation
+
+```r
+install.packages("remotes")  
+remotes::install_github("R-4-Data-Science/Final_Project_multipathaic")
 
 library(multipathaic)
+````
 
-# Simulate example data
+---
+
+## 🔹 Quick Start Example
+
+Here is a minimal example you can copy and run:
+
+```r
+library(multipathaic)
+
+# Simulated example data
 set.seed(123)
 n <- 100
 p <- 5
@@ -57,136 +48,118 @@ X <- matrix(rnorm(n * p), n, p)
 colnames(X) <- paste0("x", 1:p)
 y <- X[,1] + 0.5 * X[,2] + rnorm(n)
 
-# Step 1: Multi-path forward selection
-paths <- build_paths(X, y, family = "gaussian", K = 5, delta = 1.5)
+# 1. Build multi-path selection tree
+paths <- build_paths(
+  X, y,
+  family = "gaussian",
+  K = 5,         # number of paths
+  delta = 1.5    # AIC competitiveness threshold
+)
 
-# Step 2: Bootstrap stability analysis
-stab <- stability(X, y, family = "gaussian", B = 50)
+# 2. Bootstrap stability analysis
+stab <- stability(
+  X, y,
+  family = "gaussian",
+  B = 50         # number of bootstrap samples
+)
 
-# Step 3: Identify plausible models
-plausible <- plausible_models(paths, stab, Delta = 2, tau = 0.6)
+# 3. Identify plausible models
+plausible <- plausible_models(
+  paths, stab,
+  Delta = 2,     # AIC tolerance
+  tau = 0.6      # stability threshold
+)
 
-# Step 4: Visualize exploration results
+# 4. Visualizations
 plot_model_tree(paths)
 plot_stability(stab)
 plot_variable_heatmap(plausible)
+```
 
-###############################################################################
+---
 
+## 🔹 Shiny Web Application
 
-###############################################################################
-# RUNNING THE SHINY WEB APPLICATION
-###############################################################################
-#
-# `multipathaic` includes a full interactive Shiny dashboard
-# that allows users to run all analyses through a web browser.
-#
-# Launch the app:
-#
-# multipathaic::run_multipathaic_app()
-#
-# Features of the Shiny App:
-#
-# * Upload datasets (CSV)
-# * Multi-path forward selection
-# * Bootstrap stability analysis
-# * Plausible model identification
-# * Model tree visualization
-# * Stability and importance plots
-# * Downloadable summary tables and results
-#
-# The application opens automatically in your default web browser.
-#
-###############################################################################
+`multipathaic` includes a complete browser-based dashboard.
 
+Launch it with:
 
-###############################################################################
-# MAIN FUNCTIONS
-###############################################################################
-#
-# Core Algorithms
-# ---------------
-#
-# * build_paths()        — Multi-path forward selection
-# * stability()          — Bootstrap stability analysis
-# * plausible_models()   — Select final plausible models
-#
-#
-# Visualization Tools
-# -------------------
-#
-# * plot_stability()              — Stability bar chart
-# * plot_aic_by_step()            — AIC distribution across steps
-# * plot_model_tree()             — Visual model-exploration tree
-# * plot_variable_heatmap()       — Co-occurrence heatmap
-# * plot_model_dashboard()        — Four-panel summary dashboard
-# * plot_stability_distribution() — Bootstrap distribution plots
-# * plot_variable_importance()    — Variable importance rankings
-#
-#
-# Utility Functions
-# -----------------
-#
-# * extract_all_models()          — Extract full model list
-# * confusion_metrics()           — Binary classification metrics
-# * variable_importance_ranking() — Combined importance score
-#
-###############################################################################
+```r
+multipathaic::run_multipathaic_app()
+```
 
+### App Features
 
-###############################################################################
-# DOCUMENTATION
-###############################################################################
-#
-# Access vignettes:
-#
-# vignette("diabetes-example", package = "multipathaic")
-# vignette("publication-quality", package = "multipathaic")
-#
-###############################################################################
+* CSV dataset upload
+* Multi-path AIC selection
+* Bootstrap stability
+* Plausible model identification
+* Model tree visualization
+* Heatmaps, variable importance, and dashboards
+* Downloadable summaries and results
 
+---
 
-###############################################################################
-# FEATURES
-###############################################################################
-#
-# * Supports **linear** and **logistic** regression
-# * Explores **multiple competitive model paths**
-# * Quantifies **stability** via bootstrapping
-# * Produces highly interpretable **importance scores**
-# * Provides publication-quality visualizations for academic papers
-#
-###############################################################################
+## 🔹 Main Functions
 
+### Core Algorithms
 
-###############################################################################
-# CITATION
-###############################################################################
-#
-# If you use this package, please cite:
-#
-# multipathaic: Multi-Path AIC Model Selection with Stability Analysis
-# R package version 1.0.0
-# https://github.com/R-4-Data-Science/Final_Project_multipathaic.git
-#
-###############################################################################
+| Function             | Description                    |
+| -------------------- | ------------------------------ |
+| `build_paths()`      | Multi-path forward selection   |
+| `stability()`        | Bootstrap stability analysis   |
+| `plausible_models()` | Selects final plausible models |
 
+### Visualization Tools
 
-###############################################################################
-# LICENSE
-###############################################################################
-#
-# MIT License.
-#
-###############################################################################
+| Plot                         | Purpose                |
+| ---------------------------- | ---------------------- |
+| `plot_stability()`           | Stability bar chart    |
+| `plot_model_tree()`          | Model-exploration tree |
+| `plot_variable_heatmap()`    | Variable co-occurrence |
+| `plot_aic_by_step()`         | AIC evolution          |
+| `plot_model_dashboard()`     | Four-panel summary     |
+| `plot_variable_importance()` | Importance ranking     |
 
+### Utilities
 
-###############################################################################
-# AUTHORS
-###############################################################################
-#
-# * Michael Asante Ofosu
-# * Mohammad Al Srayheen
-# * Soroosh Alavi
-#
-###############################################################################
+* `extract_all_models()`
+* `confusion_metrics()`
+* `variable_importance_ranking()`
+
+---
+
+## 🔹 Documentation
+
+Use the built-in vignettes:
+
+```r
+vignette("diabetes-example", package = "multipathaic")
+vignette("publication-quality", package = "multipathaic")
+```
+
+---
+
+## 🔹 Citation
+
+If you use this package, please cite:
+
+**multipathaic: Multi-Path AIC Model Selection with Stability Analysis**
+R package version 1.0.0
+[https://github.com/R-4-Data-Science/Final_Project_multipathaic](https://github.com/R-4-Data-Science/Final_Project_multipathaic)
+
+---
+
+## 🔹 License
+
+MIT License.
+
+---
+
+## 🔹 Authors
+
+* **Michael Asante Ofosu**
+* **Mohammad Al Srayheen**
+* **Soroosh Alavi**
+
+---
