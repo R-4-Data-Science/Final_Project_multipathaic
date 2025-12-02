@@ -39,13 +39,13 @@ remotes::install_github("R-4-Data-Science/Final_Project_multipathaic")
 ```{r load, message=FALSE}
 # Load required packages
 library(multipathaic)
-library(care)        # For diabetes data
-library(mlbench)     # For breast cancer data
+library(care)        
+library(mlbench)     
 library(dplyr)
 library(tidyr)
 ```
 
----
+
 
 # Example 1: Diabetes Progression (Regression)
 
@@ -64,10 +64,10 @@ data(efron2004, package = "care")
 
 **Diabetes Progression Dataset**
 
-- 📊 **Observations:** `r nrow(efron2004$x)` patients
-- 📈 **Predictors:** `r ncol(efron2004$x)` baseline variables
-- 🎯 **Response:** Diabetes progression (1 year post-baseline)
-- **Variables:** `r paste(colnames(efron2004$x), collapse = ", ")`
+-  **Observations:** `r nrow(efron2004$x)` patients
+-  **Predictors:** `r ncol(efron2004$x)` baseline variables
+-  **Response:** Diabetes progression (1 year post-baseline)
+-  **Variables:** `r paste(colnames(efron2004$x), collapse = ", ")`
 
 ```{r diabetes_summary_table}
 # Display summary in a nice table
@@ -90,8 +90,8 @@ knitr::kable(predictor_summary,
 
 ```{r engineer_features}
 # Extract predictors and response from the list
-X_base <- efron2004$x  # Already a matrix
-y_diabetes <- efron2004$y  # Already a vector
+X_base <- efron2004$x  
+y_diabetes <- efron2004$y  
 
 # Standardize predictors (they are already standardized, but we'll ensure consistency)
 X_scaled <- scale(X_base)
@@ -229,7 +229,7 @@ plausible_diabetes <- plausible_models(
   Delta = 4,              # Within 4 AIC of best
   tau = 0.5,              # Average stability >= 0.5
   remove_duplicates = TRUE,
-  refit = FALSE,          # Don't refit - we'll do it ourselves
+  refit = FALSE,          
   X = X_train,
   y = y_train
 )
@@ -325,8 +325,8 @@ knitr::kable(performance_table,
 
 **Model Summary:**
 
-- 📊 **Model Size:** `r length(selected_vars)` predictors (from `r ncol(X_train)` candidates)
-- ⭐ **Average Stability Score:** `r sprintf("%.3f", plausible_diabetes$avg_stability[1])`
+-  **Model Size:** `r length(selected_vars)` predictors (from `r ncol(X_train)` candidates)
+-  **Average Stability Score:** `r sprintf("%.3f", plausible_diabetes$avg_stability[1])`
 
 **Selected Variables:**
 
@@ -376,10 +376,10 @@ X_cancer <- scale(X_cancer)
 
 **Breast Cancer Diagnosis Dataset**
 
-- 📊 **Initial observations:** `r nrow(BreastCancer)`
-- 📈 **Predictors:** `r ncol(BreastCancer) - 2` cellular features
-- 🎯 **Response:** Malignant vs. Benign diagnosis
-- 📍 **Source:** Fine needle aspirate of breast mass
+-  **Initial observations:** `r nrow(BreastCancer)`
+-  **Predictors:** `r ncol(BreastCancer) - 2` cellular features
+-  **Response:** Malignant vs. Benign diagnosis
+-  **Source:** Fine needle aspirate of breast mass
 
 ```{r data_quality_table}
 # Create data quality summary
@@ -501,7 +501,7 @@ plausible_cancer <- plausible_models(
   Delta = 3,
   tau = 0.5,
   remove_duplicates = TRUE,
-  refit = FALSE,           # Don't refit - we'll do it ourselves
+  refit = FALSE,           
   X = X_train_cancer,
   y = y_train_cancer
 )
@@ -661,9 +661,9 @@ knitr::kable(metrics_train_df,
 
 **Model Summary:**
 
-- 📊 **Model Size:** `r length(selected_vars_cancer)` predictors (from `r ncol(X_train_cancer)` candidates)
-- ⭐ **Average Stability Score:** `r sprintf("%.3f", plausible_cancer$avg_stability[1])`
-- 🎯 **Selected Variables:** `r paste(selected_vars_cancer, collapse = ", ")`
+-  **Model Size:** `r length(selected_vars_cancer)` predictors (from `r ncol(X_train_cancer)` candidates)
+-  **Average Stability Score:** `r sprintf("%.3f", plausible_cancer$avg_stability[1])`
+-  **Selected Variables:** `r paste(selected_vars_cancer, collapse = ", ")`
 
 **Clinical Interpretation:** The model achieves excellent discrimination between malignant and benign tumors, with high sensitivity (detecting true cancers) and specificity (correctly identifying benign cases). The stability analysis identifies the most reliable cellular characteristics for diagnosis.
 
@@ -986,7 +986,7 @@ If you use this package in your research, please cite:
 
 **Academic Affiliation:**
 
-- **Course:** STAT 7020 - Statistical Computing  
+- **Course:** STAT 6210 - R Programming  
 - **Institution:** Auburn University, Department of Statistics & Data Science
 - **Date:** `r Sys.Date()`
 
