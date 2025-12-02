@@ -6,6 +6,9 @@
 # IMPORTANT: Save this file OUTSIDE your package directory!
 # Run with: source("multipathaic_professional_modernized.R") or click "Run App"
 # ==============================================================================
+#install.packages("shinydashboard")
+install.packages("multipathaic")
+
 
 # Load required libraries
 library(shiny)

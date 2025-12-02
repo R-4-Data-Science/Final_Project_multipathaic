@@ -38,6 +38,7 @@ remotes::install_github("R-4-Data-Science/Final_Project_multipathaic")
 
 ```{r load, message=FALSE}
 # Load required packages
+#install.packages("mlbench")
 library(multipathaic)
 library(care)        
 library(mlbench)     

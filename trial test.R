@@ -33,6 +33,9 @@ plot_stability(stab_cars, threshold = 0.5, top_n = 6)
 plot_aic_by_step(paths_cars)
 plot_model_tree(paths_cars, max_models = 20)
 if (nrow(plausible_cars) > 1) plot_variable_heatmap(plausible_cars)
+#pdf("heatmap_plausible_cars.pdf", width = 10, height = 8)
+#plot_variable_heatmap(plausible_cars)
+#dev.off()
 plot_model_dashboard(paths_cars, stab_cars, plausible_cars)
 plot_stability_distribution(stab_cars, top_n = 5)
 plot_variable_importance(importance_cars, top_n = 6)
@@ -72,7 +75,7 @@ plot_model_tree(paths_trans, max_models = 15)
 # ==============================================================================
 # TEST 3: CUSTOM COLORS
 # ==============================================================================
-
+graphics.off()
 # Custom colors
 plot_stability(stab_cars, top_n = 6, col_stable = "darkgreen", col_unstable = "orange", col_threshold = "purple")
 plot_aic_by_step(paths_cars, col_box = "lightyellow", col_border = "darkorange", col_median = "darkblue", col_best = "red")
