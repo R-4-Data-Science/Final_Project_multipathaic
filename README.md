@@ -1,11 +1,8 @@
 
-````markdown
-# multipathaic  
 *A Multi-Path AIC Model Selection Framework with Stability Analysis*
 
 `multipathaic` provides a robust alternative to traditional stepwise selection by exploring **multiple forward-selection paths** simultaneously and combining **AIC** with **bootstrap stability**. The package is designed for researchers who want transparent, reproducible, and interpretable model-selection workflows.
 
----
 
 ## 🔹 Key Features
 
@@ -20,7 +17,7 @@
 - Fully integrated **Shiny dashboard** for interactive exploration
 - Supports **linear** and **logistic** regression
 
----
+
 
 ## 🔹 Installation
 
@@ -31,7 +28,6 @@ remotes::install_github("R-4-Data-Science/Final_Project_multipathaic")
 library(multipathaic)
 ````
 
----
 
 ## 🔹 Quick Start Example
 
@@ -76,7 +72,6 @@ plot_stability(stab)
 plot_variable_heatmap(plausible)
 ```
 
----
 
 ## 🔹 Shiny Web Application
 
@@ -98,7 +93,7 @@ multipathaic::run_multipathaic_app()
 * Heatmaps, variable importance, and dashboards
 * Downloadable summaries and results
 
----
+
 
 ## 🔹 Main Functions
 
@@ -127,7 +122,7 @@ multipathaic::run_multipathaic_app()
 * `confusion_metrics()`
 * `variable_importance_ranking()`
 
----
+
 
 ## 🔹 Documentation
 
@@ -138,7 +133,7 @@ vignette("diabetes-example", package = "multipathaic")
 vignette("publication-quality", package = "multipathaic")
 ```
 
----
+
 
 ## 🔹 Citation
 
@@ -148,13 +143,13 @@ If you use this package, please cite:
 R package version 1.0.0
 [https://github.com/R-4-Data-Science/Final_Project_multipathaic](https://github.com/R-4-Data-Science/Final_Project_multipathaic)
 
----
+
 
 ## 🔹 License
 
 MIT License.
 
----
+
 
 ## 🔹 Authors
 
@@ -162,4 +157,4 @@ MIT License.
 * **Mohammad Al Srayheen**
 * **Soroosh Alavi**
 
----
+
