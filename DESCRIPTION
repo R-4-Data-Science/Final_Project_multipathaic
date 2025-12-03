@@ -19,12 +19,14 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Depends: 
     R (>= 3.5.0)
-Imports: 
-    stats
-Suggests: 
-    knitr,
-    rmarkdown,
+Imports:
+    stats,
+    shiny,
+    shinydashboard,
     ggplot2,
     dplyr,
     tidyr
+Suggests:
+    knitr,
+    rmarkdown
 VignetteBuilder: knitr

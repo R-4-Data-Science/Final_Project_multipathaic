@@ -35,7 +35,8 @@
 #'   \item{frontiers}{A list of length K, where each element contains the models at that step}
 #'   \item{aic_by_model}{A named list of AIC values for all models}
 #'   \item{meta}{Metadata including parameters used}
-#'
+#' 
+#' @author Soroosh Alavi
 #' @export
 #' @examples
 #' \dontrun{
