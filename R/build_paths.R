@@ -210,16 +210,25 @@
       # AND that improve parent AIC by at least eps
       # --------------------------------------------------------------------
 
+
       if (length(children_for_this_parent) > 0) {
-        # Extract AICs
+
+        # Find best child AIC for this parent
         child_aics <- sapply(children_for_this_parent, function(x) x$aic)
         best_child_aic <- min(child_aics)
 
-        # Determine which children to keep
-        for (child in children_for_this_parent) {
-          if ((child$aic <= best_child_aic + delta) &&
-              (child$aic <= parent_aic - eps)) {
-            all_children[[length(all_children) + 1]] <- child
+        # Check if best child improves parent AIC by at least eps
+        improvement <- parent_aic - best_child_aic
+
+        if (improvement >= eps) {
+          # Keep children within delta of best child AIC
+          keep_indices <- which(child_aics <= best_child_aic + delta)
+
+          # Add kept children to all_children
+          for (idx in keep_indices) {
+            all_children[[length(all_children) + 1]] <- children_for_this_parent[[idx]]
           }
         }
       }
+    }
+
