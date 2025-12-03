@@ -27,7 +27,11 @@ Imports:
     dplyr,
     tidyr,
     DT,
-    plotly
+    plotly,
+    colourpicker,
+    shinyjs,
+    shinyWidgets,
+    gridExtra
 Suggests:
     knitr,
     rmarkdown
