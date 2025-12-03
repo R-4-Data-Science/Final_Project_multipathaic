@@ -232,3 +232,48 @@
       }
     }
 
+    # --------------------------------------------------------------------
+    # Check if we found any valid children
+    # --------------------------------------------------------------------
+
+    if (length(all_children) == 0) {
+      if (verbose) {
+        cat("No children met the improvement criteria. Stopping early.\n")
+      }
+      # Trim frontiers to actual steps taken
+      frontiers <- frontiers[1:(k-1)]
+      break
+    }
+
+    # --------------------------------------------------------------------
+    # Deduplicate: Remove models with identical variable sets
+    # --------------------------------------------------------------------
+
+    unique_model_ids <- unique(sapply(all_children, function(x) x$model_id))
+
+    unique_children <- list()
+    for (uid in unique_model_ids) {
+      # Find first occurrence of this model
+      idx <- which(sapply(all_children, function(x) x$model_id == uid))[1]
+      unique_children[[length(unique_children) + 1]] <- all_children[[idx]]
+    }
+
+    if (verbose) {
+      cat(sprintf("Generated %d children, %d unique\n",
+                  length(all_children), length(unique_children)))
+    }
+
+    # --------------------------------------------------------------------
+    # If too many models, keep only the best L by AIC
+    # --------------------------------------------------------------------
+
+    if (length(unique_children) > L) {
+      # Sort by AIC
+      aics <- sapply(unique_children, function(x) x$aic)
+      sorted_indices <- order(aics)
+      unique_children <- unique_children[sorted_indices[1:L]]
+
+      if (verbose) {
+        cat(sprintf("Limiting to best L = %d models\n", L))
+      }
+    }
