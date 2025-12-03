@@ -101,3 +101,36 @@
     cat(sprintf("  eps = %.6f\n", eps))
     cat(sprintf("  L = %d\n\n", L))
   }
+  # ============================================================================
+  # HELPER FUNCTION: Fit a model and return AIC
+  # ============================================================================
+
+  fit_and_get_aic <- function(vars_in_model) {
+    # If empty model (only intercept)
+    if (length(vars_in_model) == 0) {
+      if (family == "gaussian") {
+        fit <- lm(y ~ 1)
+      } else {
+        fit <- glm(y ~ 1, family = binomial)
+      }
+    } else {
+      # Model with selected variables
+      X_sub <- X[, vars_in_model, drop = FALSE]
+      if (family == "gaussian") {
+        fit <- lm(y ~ X_sub)
+      } else {
+        fit <- glm(y ~ X_sub, family = binomial)
+      }
+    }
+    return(AIC(fit))
+  }
+
+  # ============================================================================
+  # HELPER FUNCTION: Create a unique model identifier
+  # ============================================================================
+
+  model_to_string <- function(vars) {
+    if (length(vars) == 0) return("EMPTY")
+    paste(sort(vars), collapse = "+")
+  }
+
