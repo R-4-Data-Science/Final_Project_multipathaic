@@ -51,7 +51,7 @@
 #' result <- build_paths(X, y, family = "gaussian", K = 3, delta = 1)
 #' }
 
- # ============================================================================
+  # ============================================================================
   # INPUT VALIDATION
   # ============================================================================
 
@@ -134,3 +134,92 @@
     paste(sort(vars), collapse = "+")
   }
 
+  # ============================================================================
+  # INITIALIZATION: Start with empty model
+  # ============================================================================
+
+  # Store all models across all steps
+  frontiers <- vector("list", K)
+  aic_storage <- list()
+
+  # Step 0: Empty model (intercept only)
+  empty_model <- list(
+    vars = character(0),
+    aic = fit_and_get_aic(character(0)),
+    model_id = "EMPTY"
+  )
+
+  # Current models being explored
+  current_models <- list(empty_model)
+
+  if (verbose) {
+    cat(sprintf("Step 0: Empty model, AIC = %.2f\n\n", empty_model$aic))
+  }
+
+  # ============================================================================
+  # MAIN LOOP: Build paths step by step
+  # ============================================================================
+
+  for (k in 1:K) {
+
+    if (verbose) {
+      cat(sprintf("========== Step %d ==========\n", k))
+      cat(sprintf("Starting with %d parent models\n", length(current_models)))
+    }
+
+    # Container for all candidate children in this step
+    all_children <- list()
+
+    # --------------------------------------------------------------------
+    # For each parent model, generate children by adding one variable
+    # --------------------------------------------------------------------
+
+    for (parent_idx in seq_along(current_models)) {
+
+      parent <- current_models[[parent_idx]]
+      parent_vars <- parent$vars
+      parent_aic <- parent$aic
+
+      # Find variables not yet in this parent model
+      available_vars <- setdiff(var_names, parent_vars)
+
+      if (length(available_vars) == 0) {
+        # No more variables to add to this parent
+        next
+      }
+
+      # Try adding each available variable
+      children_for_this_parent <- list()
+
+      for (new_var in available_vars) {
+        # Create child model
+        child_vars <- c(parent_vars, new_var)
+        child_aic <- fit_and_get_aic(child_vars)
+        child_id <- model_to_string(child_vars)
+
+        children_for_this_parent[[length(children_for_this_parent) + 1]] <- list(
+          vars = child_vars,
+          aic = child_aic,
+          model_id = child_id,
+          parent_id = parent$model_id
+        )
+      }
+
+      # --------------------------------------------------------------------
+      # Filter children: keep those within delta of parent's best child
+      # AND that improve parent AIC by at least eps
+      # --------------------------------------------------------------------
+
+      if (length(children_for_this_parent) > 0) {
+        # Extract AICs
+        child_aics <- sapply(children_for_this_parent, function(x) x$aic)
+        best_child_aic <- min(child_aics)
+
+        # Determine which children to keep
+        for (child in children_for_this_parent) {
+          if ((child$aic <= best_child_aic + delta) &&
+              (child$aic <= parent_aic - eps)) {
+            all_children[[length(all_children) + 1]] <- child
+          }
+        }
+      }
