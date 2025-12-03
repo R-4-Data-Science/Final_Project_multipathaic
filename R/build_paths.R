@@ -50,6 +50,13 @@
 #' # Run multi-path search
 #' result <- build_paths(X, y, family = "gaussian", K = 3, delta = 1)
 #' }
+build_paths <- function(X, y,
+                        family = c("gaussian", "binomial"),
+                        K = NULL,
+                        eps = 1e-6,
+                        delta = 1,
+                        L = 50,
+                        verbose = FALSE) {
 
   # ============================================================================
   # INPUT VALIDATION
@@ -101,6 +108,7 @@
     cat(sprintf("  eps = %.6f\n", eps))
     cat(sprintf("  L = %d\n\n", L))
   }
+
   # ============================================================================
   # HELPER FUNCTION: Fit a model and return AIC
   # ============================================================================
@@ -210,7 +218,6 @@
       # AND that improve parent AIC by at least eps
       # --------------------------------------------------------------------
 
-
       if (length(children_for_this_parent) > 0) {
 
         # Find best child AIC for this parent
@@ -277,3 +284,78 @@
         cat(sprintf("Limiting to best L = %d models\n", L))
       }
     }
+
+    # --------------------------------------------------------------------
+    # Store results for this step
+    # --------------------------------------------------------------------
+
+    frontiers[[k]] <- unique_children
+    current_models <- unique_children
+
+    # Store AICs
+    for (child in unique_children) {
+      aic_storage[[child$model_id]] <- child$aic
+    }
+
+    if (verbose) {
+      best_aic <- min(sapply(unique_children, function(x) x$aic))
+      cat(sprintf("Step %d complete: %d models kept, best AIC = %.2f\n\n",
+                  k, length(unique_children), best_aic))
+    }
+  }
+
+  # ============================================================================
+  # RETURN RESULTS
+  # ============================================================================
+
+  meta <- list(
+    n = n,
+    p = p,
+    K = length(frontiers),  # Actual steps taken
+    family = family,
+    eps = eps,
+    delta = delta,
+    L = L,
+    var_names = var_names
+  )
+
+  result <- list(
+    frontiers = frontiers,
+    aic_by_model = aic_storage,
+    meta = meta
+  )
+
+  class(result) <- c("multipath", "list")
+
+  return(result)
+}
+
+
+#' Print method for multipath objects
+#'
+#' @param x A multipath object from build_paths()
+#' @param ... Additional arguments (not used)
+#' @export
+print.multipath <- function(x, ...) {
+  cat("Multi-Path Forward Selection Result\n")
+  cat("====================================\n")
+  cat(sprintf("Family: %s\n", x$meta$family))
+  cat(sprintf("Sample size: %d\n", x$meta$n))
+  cat(sprintf("Number of predictors: %d\n", x$meta$p))
+  cat(sprintf("Steps completed: %d\n", x$meta$K))
+  cat(sprintf("Parameters: eps=%.2e, delta=%.2f, L=%d\n",
+              x$meta$eps, x$meta$delta, x$meta$L))
+  cat("\nModels per step:\n")
+  for (k in seq_along(x$frontiers)) {
+    cat(sprintf("  Step %d: %d models\n", k, length(x$frontiers[[k]])))
+  }
+
+  # Show best model at final step
+  if (length(x$frontiers) > 0) {
+    last_step <- x$frontiers[[length(x$frontiers)]]
+    best_model <- last_step[[which.min(sapply(last_step, function(m) m$aic))]]
+    cat(sprintf("\nBest model at final step (AIC = %.2f):\n", best_model$aic))
+    cat(sprintf("  Variables: %s\n", paste(best_model$vars, collapse = ", ")))
+  }
+}
+
