@@ -26,7 +26,8 @@ Imports:
     ggplot2,
     dplyr,
     tidyr,
-    DT
+    DT,
+    plotly
 Suggests:
     knitr,
     rmarkdown
