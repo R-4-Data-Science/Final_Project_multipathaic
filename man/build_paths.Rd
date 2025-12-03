@@ -74,3 +74,6 @@ y <- X[,1] + 0.5 * X[,2] + rnorm(n)
 result <- build_paths(X, y, family = "gaussian", K = 3, delta = 1)
 }
 }
+\author{
+Soroosh Alavi
+}

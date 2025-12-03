@@ -25,7 +25,8 @@ Imports:
     shinydashboard,
     ggplot2,
     dplyr,
-    tidyr
+    tidyr,
+    DT
 Suggests:
     knitr,
     rmarkdown
