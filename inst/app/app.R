@@ -7,13 +7,13 @@
 # Run with: source("multipathaic_professional_modernized.R") or click "Run App"
 # ==============================================================================
 #install.packages("shinydashboard")
-install.packages("multipathaic")
+#install.packages("multipathaic")
 
 
 # Load required libraries
 library(shiny)
 library(shinydashboard)
-library(multipathaic)
+#library(multipathaic)
 library(DT)
 library(plotly)
 library(shinyWidgets)
