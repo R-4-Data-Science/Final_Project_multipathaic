@@ -778,8 +778,6 @@ plot_model_dashboard(paths_cancer, stab_cancer, plausible_cancer)
 
 # Summary
 
-# Summary
-
 ## Key Results
 
 ### Diabetes Progression (Regression):
