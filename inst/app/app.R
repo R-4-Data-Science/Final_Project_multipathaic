@@ -26,23 +26,57 @@ library(scales)
 # ==============================================================================
 # ULTRA-LIGHT PROFESSIONAL COLOR PALETTE (CLOSE TO WHITE)
 # ==============================================================================
+# app_colors <- list(
+   # primary = "#C5B5A0",        # very light taupe
+   # secondary = "#E8DFD4",      # almost white beige
+   # accent = "#D4C4B0",         # light warm gray
+   # background = "#FCFCFC",     # almost pure white
+   # card = "#FFFFFF",           # pure white cards
+   # text_dark = "#2D2D2D",      # dark gray text (readable)
+   # text_light = "#666666",     # medium gray text
+   # hover = "#F7F5F2",          # subtle hover (barely visible)
+   # border = "#E8E8E8",         # very light gray border
+   # success = "#8FBC8F",        # soft green
+   # warning = "#DEB887",        # soft orange/tan
+   # danger = "#CD5C5C",         # soft red
+   # info = "#87CEEB",           # sky blue
+#   shadow = "rgba(0, 0, 0, 0.04)",      # barely visible shadow
+#   shadow_hover = "rgba(0, 0, 0, 0.08)"  # subtle hover shadow
+# )
+
+# ==============================================================================
+# AUBURN UNIVERSITY THEME COLOR PALETTE
+# ==============================================================================
+
 app_colors <- list(
-  primary = "#C5B5A0",        # very light taupe
-  secondary = "#E8DFD4",      # almost white beige
-  accent = "#D4C4B0",         # light warm gray
-  background = "#FCFCFC",     # almost pure white
-  card = "#FFFFFF",           # pure white cards
-  text_dark = "#2D2D2D",      # dark gray text (readable)
-  text_light = "#666666",     # medium gray text
-  hover = "#F7F5F2",          # subtle hover (barely visible)
-  border = "#E8E8E8",         # very light gray border
-  success = "#8FBC8F",        # soft green
-  warning = "#DEB887",        # soft orange/tan
-  danger = "#CD5C5C",         # soft red
-  info = "#87CEEB",           # sky blue
-  shadow = "rgba(0, 0, 0, 0.04)",      # barely visible shadow
-  shadow_hover = "rgba(0, 0, 0, 0.08)"  # subtle hover shadow
+  # Main Auburn colors
+  primary       = "#0C2340",        # Auburn navy (main brand color)
+  secondary     = "#f36800",        # Auburn orange (accents, buttons, highlights)
+#  accent        = "#F7A85B",        # soft light orange accent for gradients
+
+  # Backgrounds / surfaces
+  background    = "#F7F8FA",        # very light cool gray background
+  card          = "#FFFFFF",        # pure white cards/panels
+  hover         = "#EDF1F7",        # light hover for rows/buttons
+
+  # Text
+  text_dark     = "#111827",        # dark gray for main text (readable)
+  text_light    = "#6B7280",        # muted gray for secondary text
+
+  # Borders & subtle lines
+  border        = "#D1D5DB",        # light gray border
+
+  # Status colors
+  success       = "#1b8d52",        # green (OK/valid)
+  warning       = "#F59E0B",        # amber (warnings)
+  danger        = "#CD5C5C",        # deep red (errors)
+  info          = "#2376c5",        # blue (information / hints)
+
+  # Shadows
+  shadow        = "rgba(0, 0, 0, 0.05)",   # soft shadow
+  shadow_hover  = "rgba(0, 0, 0, 0.12)"    # stronger on hover
 )
+
 
 # ==============================================================================
 # USER INTERFACE
