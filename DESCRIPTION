@@ -34,5 +34,6 @@ Imports:
     gridExtra
 Suggests:
     knitr,
-    rmarkdown
+    rmarkdown,
+    lars
 VignetteBuilder: knitr
