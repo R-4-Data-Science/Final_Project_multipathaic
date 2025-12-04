@@ -132,8 +132,8 @@ multipathaic::run_multipathaic_app()
 ## 📘 Documentation & Vignettes
 
 ```r
-vignette("diabetes-example", package = "multipathaic")
-vignette("publication-quality", package = "multipathaic")
+vignette("breast_cancer_data_example", package = "multipathaic")
+vignette("diabetes_data_example", package = "multipathaic")
 ```
 
 
