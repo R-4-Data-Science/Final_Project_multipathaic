@@ -26,23 +26,57 @@ library(scales)
 # ==============================================================================
 # ULTRA-LIGHT PROFESSIONAL COLOR PALETTE (CLOSE TO WHITE)
 # ==============================================================================
+# app_colors <- list(
+   # primary = "#C5B5A0",        # very light taupe
+   # secondary = "#E8DFD4",      # almost white beige
+   # accent = "#D4C4B0",         # light warm gray
+   # background = "#FCFCFC",     # almost pure white
+   # card = "#FFFFFF",           # pure white cards
+   # text_dark = "#2D2D2D",      # dark gray text (readable)
+   # text_light = "#666666",     # medium gray text
+   # hover = "#F7F5F2",          # subtle hover (barely visible)
+   # border = "#E8E8E8",         # very light gray border
+   # success = "#8FBC8F",        # soft green
+   # warning = "#DEB887",        # soft orange/tan
+   # danger = "#CD5C5C",         # soft red
+   # info = "#87CEEB",           # sky blue
+#   shadow = "rgba(0, 0, 0, 0.04)",      # barely visible shadow
+#   shadow_hover = "rgba(0, 0, 0, 0.08)"  # subtle hover shadow
+# )
+
+# ==============================================================================
+# AUBURN UNIVERSITY THEME COLOR PALETTE
+# ==============================================================================
+
 app_colors <- list(
-  primary = "#C5B5A0",        # very light taupe
-  secondary = "#E8DFD4",      # almost white beige
-  accent = "#D4C4B0",         # light warm gray
-  background = "#FCFCFC",     # almost pure white
-  card = "#FFFFFF",           # pure white cards
-  text_dark = "#2D2D2D",      # dark gray text (readable)
-  text_light = "#666666",     # medium gray text
-  hover = "#F7F5F2",          # subtle hover (barely visible)
-  border = "#E8E8E8",         # very light gray border
-  success = "#8FBC8F",        # soft green
-  warning = "#DEB887",        # soft orange/tan
-  danger = "#CD5C5C",         # soft red
-  info = "#87CEEB",           # sky blue
-  shadow = "rgba(0, 0, 0, 0.04)",      # barely visible shadow
-  shadow_hover = "rgba(0, 0, 0, 0.08)"  # subtle hover shadow
+  # Main Auburn colors
+  primary       = "#0C2340",        # Auburn navy (main brand color)
+  secondary     = "#f36800",        # Auburn orange (accents, buttons, highlights)
+#  accent        = "#F7A85B",        # soft light orange accent for gradients
+
+  # Backgrounds / surfaces
+  background    = "#F7F8FA",        # very light cool gray background
+  card          = "#FFFFFF",        # pure white cards/panels
+  hover         = "#EDF1F7",        # light hover for rows/buttons
+
+  # Text
+  text_dark     = "#111827",        # dark gray for main text (readable)
+  text_light    = "#6B7280",        # muted gray for secondary text
+
+  # Borders & subtle lines
+  border        = "#D1D5DB",        # light gray border
+
+  # Status colors
+  success       = "#1b8d52",        # green (OK/valid)
+  warning       = "#F59E0B",        # amber (warnings)
+  danger        = "#CD5C5C",        # deep red (errors)
+  info          = "#2376c5",        # blue (information / hints)
+
+  # Shadows
+  shadow        = "rgba(0, 0, 0, 0.05)",   # soft shadow
+  shadow_hover  = "rgba(0, 0, 0, 0.12)"    # stronger on hover
 )
+
 
 # ==============================================================================
 # USER INTERFACE
@@ -1323,6 +1357,9 @@ ui <- dashboardPage(
       # ==========================================================================
       # DIAGNOSTICS TAB
       # ==========================================================================
+      # ==========================================================================
+      # DIAGNOSTICS TAB
+      # ==========================================================================
       tabItem(
         tabName = "diagnostics",
         fluidRow(
@@ -1339,23 +1376,44 @@ ui <- dashboardPage(
             )
           )
         ),
+
+        # Row 1: Residuals & Q-Q
         fluidRow(
           box(
             title = HTML('<i class="fas fa-chart-scatter"></i> Residuals vs Fitted'),
             status = "info",
             solidHeader = TRUE,
             width = 6,
-            plotOutput("diagnostic_residuals", height = "450px")
+            plotOutput("diagnostic_residuals", height = "350px")
           ),
           box(
             title = HTML('<i class="fas fa-chart-line"></i> Q-Q Plot'),
             status = "info",
             solidHeader = TRUE,
             width = 6,
-            plotOutput("diagnostic_qq", height = "450px")
+            plotOutput("diagnostic_qq", height = "350px")
+          )
+        ),
+
+        # Row 2: Scale-Location & Cook's distance
+        fluidRow(
+          box(
+            title = HTML('<i class="fas fa-chart-area"></i> Scale-Location'),
+            status = "info",
+            solidHeader = TRUE,
+            width = 6,
+            plotOutput("diagnostic_scale", height = "350px")
+          ),
+          box(
+            title = HTML('<i class="fas fa-bolt"></i> Cook\'s Distance'),
+            status = "info",
+            solidHeader = TRUE,
+            width = 6,
+            plotOutput("diagnostic_cooks", height = "350px")
           )
         )
       ),
+
 
       # ==========================================================================
       # PLOTS TAB
@@ -1400,7 +1458,10 @@ ui <- dashboardPage(
             selectInput(
               "report_format",
               "Output Format:",
-              choices = c("Plain Text" = "txt", "Markdown" = "md")
+              choices = c(
+                "Plain Text" = "txt",
+                "Markdown" = "md"
+              )
             ),
             hr(),
             h5(tags$i(class = "fas fa-list-check", style = "margin-right: 8px;"), "Include Sections:"),
@@ -2550,6 +2611,18 @@ server <- function(input, output, session) {
     plot(rv$diagnostic_model, which = 2)
   })
 
+  # 3. Scale-Location
+  output$diagnostic_scale <- renderPlot({
+    req(rv$diagnostic_model)
+    plot(rv$diagnostic_model, which = 3)
+  })
+
+  # 4. Cook's Distance
+  output$diagnostic_cooks <- renderPlot({
+    req(rv$diagnostic_model)
+    plot(rv$diagnostic_model, which = 4)
+  })
+
   # ============================================================================
   # ADVANCED PLOTS
   # ============================================================================
@@ -2698,6 +2771,7 @@ server <- function(input, output, session) {
       writeLines(rv$report_content, file)
     }
   )
+
 
   output$download_plot_stability <- downloadHandler(
     filename = function() { paste0("stability_plot_", Sys.Date(), ".png") },
