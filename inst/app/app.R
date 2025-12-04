@@ -7,7 +7,7 @@
 # Run with: source("multipathaic_professional_modernized.R") or click "Run App"
 # ==============================================================================
 #install.packages("shinydashboard")
-install.packages("multipathaic")
+#install.packages("multipathaic")
 
 
 # Load required libraries
@@ -1323,6 +1323,9 @@ ui <- dashboardPage(
       # ==========================================================================
       # DIAGNOSTICS TAB
       # ==========================================================================
+      # ==========================================================================
+      # DIAGNOSTICS TAB
+      # ==========================================================================
       tabItem(
         tabName = "diagnostics",
         fluidRow(
@@ -1339,23 +1342,44 @@ ui <- dashboardPage(
             )
           )
         ),
+
+        # Row 1: Residuals & Q-Q
         fluidRow(
           box(
             title = HTML('<i class="fas fa-chart-scatter"></i> Residuals vs Fitted'),
             status = "info",
             solidHeader = TRUE,
             width = 6,
-            plotOutput("diagnostic_residuals", height = "450px")
+            plotOutput("diagnostic_residuals", height = "350px")
           ),
           box(
             title = HTML('<i class="fas fa-chart-line"></i> Q-Q Plot'),
             status = "info",
             solidHeader = TRUE,
             width = 6,
-            plotOutput("diagnostic_qq", height = "450px")
+            plotOutput("diagnostic_qq", height = "350px")
+          )
+        ),
+
+        # Row 2: Scale-Location & Cook's distance
+        fluidRow(
+          box(
+            title = HTML('<i class="fas fa-chart-area"></i> Scale-Location'),
+            status = "info",
+            solidHeader = TRUE,
+            width = 6,
+            plotOutput("diagnostic_scale", height = "350px")
+          ),
+          box(
+            title = HTML('<i class="fas fa-bolt"></i> Cook\'s Distance'),
+            status = "info",
+            solidHeader = TRUE,
+            width = 6,
+            plotOutput("diagnostic_cooks", height = "350px")
           )
         )
       ),
+
 
       # ==========================================================================
       # PLOTS TAB
@@ -1400,7 +1424,10 @@ ui <- dashboardPage(
             selectInput(
               "report_format",
               "Output Format:",
-              choices = c("Plain Text" = "txt", "Markdown" = "md")
+              choices = c(
+                "Plain Text" = "txt",
+                "Markdown" = "md"
+              )
             ),
             hr(),
             h5(tags$i(class = "fas fa-list-check", style = "margin-right: 8px;"), "Include Sections:"),
@@ -2550,6 +2577,18 @@ server <- function(input, output, session) {
     plot(rv$diagnostic_model, which = 2)
   })
 
+  # 3. Scale-Location
+  output$diagnostic_scale <- renderPlot({
+    req(rv$diagnostic_model)
+    plot(rv$diagnostic_model, which = 3)
+  })
+
+  # 4. Cook's Distance
+  output$diagnostic_cooks <- renderPlot({
+    req(rv$diagnostic_model)
+    plot(rv$diagnostic_model, which = 4)
+  })
+
   # ============================================================================
   # ADVANCED PLOTS
   # ============================================================================
@@ -2698,6 +2737,7 @@ server <- function(input, output, session) {
       writeLines(rv$report_content, file)
     }
   )
+
 
   output$download_plot_stability <- downloadHandler(
     filename = function() { paste0("stability_plot_", Sys.Date(), ".png") },
