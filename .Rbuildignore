@@ -5,3 +5,5 @@
 ^\.github$
 ^demo\.Rmd$
 ^demo\.html$
+^doc$
+^Meta$
