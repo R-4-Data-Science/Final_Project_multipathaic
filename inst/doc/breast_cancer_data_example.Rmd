@@ -1,0 +1,231 @@
+---
+title: "Breast Cancer Diagnosis"
+author: "multipathaic package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Breast Cancer Diagnosis}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 7,
+  fig.height = 5
+)
+```
+
+## Introduction
+
+This vignette demonstrates the **multipathaic** workflow on breast cancer diagnostic data. We apply multi-path forward selection with stability analysis to identify reliable cellular features for distinguishing malignant from benign tumors.
+
+**Key features:**
+- Multi-path forward selection for classification problems
+- Bootstrap-based stability analysis
+- Identification of plausible models combining AIC and stability
+- Clinical interpretation of selected features
+
+**Dataset:** Fine needle aspirate measurements from 699 breast masses with 9 cellular characteristics.
+
+```{r setup}
+library(multipathaic)
+library(mlbench)
+set.seed(2025)
+```
+
+## Load Data
+
+```{r load_data}
+data(BreastCancer, package = "mlbench")
+
+# Remove ID and missing values
+bc_data <- na.omit(BreastCancer[, -1])
+
+# Convert to numeric (except Class)
+for (col in names(bc_data)[-ncol(bc_data)]) {
+  bc_data[[col]] <- as.numeric(as.character(bc_data[[col]]))
+}
+
+# Binary outcome: malignant = 1, benign = 0
+y <- as.numeric(bc_data$Class == "malignant")
+X <- as.matrix(bc_data[, -ncol(bc_data)])
+X <- scale(X)
+
+print(paste("Data dimensions:", nrow(X), "observations,", ncol(X), "predictors"))
+print(paste("Malignant cases:", sum(y), "(", round(100*mean(y), 1), "%)"))
+```
+
+The dataset contains 9 cellular characteristics measured from fine needle aspirate samples. After removing missing values, we have a binary classification problem with approximately 35% malignant cases.
+
+## Prepare Data
+
+```{r train_test}
+# Stratified 80/20 split
+n <- nrow(X)
+mal_idx <- which(y == 1)
+ben_idx <- which(y == 0)
+
+train_mal <- sample(mal_idx, floor(0.8 * length(mal_idx)))
+train_ben <- sample(ben_idx, floor(0.8 * length(ben_idx)))
+train_idx <- c(train_mal, train_ben)
+
+X_train <- X[train_idx, ]
+y_train <- y[train_idx]
+X_test <- X[-train_idx, ]
+y_test <- y[-train_idx]
+
+print(paste("Training set:", length(train_idx), "observations"))
+print(paste("Test set:", length(y_test), "observations"))
+```
+
+We use stratified sampling to maintain the proportion of malignant and benign cases in both training and test sets.
+
+## Multi-Path Forward Selection
+
+```{r build_paths}
+paths <- build_paths(
+  X = X_train,
+  y = y_train,
+  family = "binomial",
+  K = 6,
+  eps = 1e-6,
+  delta = 2,
+  L = 30,
+  verbose = FALSE
+)
+
+print(paths)
+```
+
+For this binary classification problem, we use `family = "binomial"` to fit logistic regression models. The multi-path search explores competitive models at each step.
+
+## Stability Analysis
+
+```{r stability}
+stab <- stability(
+  X = X_train,
+  y = y_train,
+  family = "binomial",
+  B = 20,
+  resample_type = "bootstrap",
+  K = 6,
+  eps = 1e-6,
+  delta = 2,
+  L = 30,
+  verbose = FALSE
+)
+
+# Top 5 most stable predictors
+head(sort(stab$pi, decreasing = TRUE), 5)
+```
+
+Stability analysis reveals which cellular features are most consistently selected across bootstrap resamples, indicating their reliability for cancer diagnosis.
+
+## Plausible Models
+
+```{r plausible}
+plaus <- plausible_models(
+  path_result = paths,
+  stability_result = stab,
+  Delta = 3,
+  tau = 0.5,
+  remove_duplicates = TRUE,
+  refit = FALSE,
+  X = X_train,
+  y = y_train
+)
+
+print(plaus)
+```
+
+We filter for models within `Delta = 3` AIC units of the best model and with average stability `tau ≥ 0.5`. This identifies a set of plausible diagnostic models that balance fit quality and predictor reliability.
+
+## Visualizations
+
+### AIC Progression
+
+```{r plot_aic, fig.width=7, fig.height=5}
+plot_aic_by_step(paths)
+```
+
+The AIC decreases sharply with the first few predictors, showing strong discriminative power. The curve flattens after 4-5 features, suggesting a parsimonious diagnostic model is achievable.
+
+### Stability Scores
+
+```{r plot_stability, fig.width=7, fig.height=5}
+plot_stability(stab, threshold = 0.5)
+```
+
+Features with high stability scores (π > 0.7) are the most reliable indicators of malignancy. Cell uniformity measures typically show highest stability, aligning with pathological criteria.
+
+## Test Performance
+
+```{r test_performance}
+# Get best model variables
+selected_vars <- plaus$variables[[1]]
+if (is.character(selected_vars) && length(selected_vars) == 1) {
+  selected_vars <- trimws(strsplit(selected_vars, ",")[[1]])
+}
+
+# Fit model on training data
+X_train_sel <- X_train[, selected_vars, drop = FALSE]
+train_data <- data.frame(y = y_train, X_train_sel)
+model <- glm(y ~ ., data = train_data, family = binomial)
+
+# Test predictions
+X_test_sel <- X_test[, selected_vars, drop = FALSE]
+test_data <- data.frame(X_test_sel)
+pred_prob <- predict(model, newdata = test_data, type = "response")
+pred_class <- as.numeric(pred_prob > 0.5)
+
+# Confusion matrix
+cm <- table(Actual = y_test, Predicted = pred_class)
+print(cm)
+
+# Calculate metrics
+accuracy <- sum(diag(cm)) / sum(cm)
+sensitivity <- cm[2, 2] / sum(cm[2, ])
+specificity <- cm[1, 1] / sum(cm[1, ])
+
+print(paste("Test Accuracy:", round(100 * accuracy, 1), "%"))
+print(paste("Sensitivity:", round(100 * sensitivity, 1), "%"))
+print(paste("Specificity:", round(100 * specificity, 1), "%"))
+print(paste("Model size:", length(selected_vars), "predictors"))
+```
+
+**Clinical Interpretation:** High sensitivity ensures reliable cancer detection (minimizing false negatives), while high specificity reduces unnecessary biopsies (minimizing false positives). The selected model achieves excellent performance on both metrics.
+
+## Summary
+
+This analysis demonstrates the multipathaic workflow for classification:
+
+1. **Data Preparation**: Stratified train-test split maintaining class balance
+2. **Multi-Path Search**: Explored multiple competitive logistic regression models
+3. **Stability Analysis**: Identified cellular features consistently selected across resamples (B = 20)
+4. **Plausible Models**: Filtered models combining AIC and stability criteria
+5. **Clinical Validation**: Evaluated diagnostic performance on held-out test set
+
+**Key Findings:**
+- Selected predictors: `r paste(selected_vars, collapse = ", ")`
+- Excellent classification performance with high sensitivity and specificity
+- Stable features align with clinical pathology criteria for malignancy
+- Parsimonious model achieves strong performance with few predictors
+
+**Clinical Utility:**
+- High sensitivity ensures reliable cancer detection
+- Strong specificity minimizes false alarms and unnecessary biopsies
+- Interpretable features support clinical decision-making
+- Robust selection increases confidence in model reliability
+
+**Advantages over single-path selection:**
+- Explores multiple competitive diagnostic models
+- Quantifies predictor reliability through stability scores
+- Provides transparent alternatives rather than single "best" model
+- More resistant to sampling variability
+
+---
+
+**Package:** multipathaic  
+**GitHub:** https://github.com/R-4-Data-Science/Final_Project_multipathaic

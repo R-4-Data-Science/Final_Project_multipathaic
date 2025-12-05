@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="multipathaic package" />
+
+
+<title>Diabetes Progression Analysis</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Diabetes Progression Analysis</h1>
+<h4 class="author">multipathaic package</h4>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This vignette demonstrates the <strong>multipathaic</strong> workflow
+on diabetes progression data. The traditional forward selection follows
+a single “best” path, but our approach explores multiple competitive
+paths simultaneously and uses bootstrap-based stability analysis to
+identify robust predictors.</p>
+<p><strong>Key features:</strong> - Multi-path forward selection to
+explore alternative models - Stability analysis via bootstrap resampling
+- Identification of plausible models combining AIC and stability -
+Feature engineering with second-order terms</p>
+<p><strong>Dataset:</strong> Diabetes progression measurements from 442
+patients with 10 baseline predictors.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(multipathaic)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(lars)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; Warning: package &#39;lars&#39; was built under R version 4.5.2</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; Loaded lars 1.3</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2025</span>)</span></code></pre></div>
+</div>
+<div id="load-data" class="section level2">
+<h2>Load Data</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">data</span>(diabetes, <span class="at">package =</span> <span class="st">&quot;lars&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>X_diabetes <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(diabetes<span class="sc">$</span>x)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>y <span class="ot">&lt;-</span> diabetes<span class="sc">$</span>y</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Original dimensions:&quot;</span>, <span class="fu">nrow</span>(X_diabetes), <span class="st">&quot;observations,&quot;</span>, <span class="fu">ncol</span>(X_diabetes), <span class="st">&quot;predictors&quot;</span>))</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Original dimensions: 442 observations, 10 predictors&quot;</span></span></code></pre></div>
+</div>
+<div id="feature-engineering-second-order-terms" class="section level2">
+<h2>Feature Engineering: Second-Order Terms</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Convert to data frame for model.matrix</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(X_diabetes)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Create formula for second-order terms (interactions + quadratics)</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>formula_expanded <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="fu">paste</span>(<span class="st">&quot;~ (&quot;</span>, <span class="fu">paste</span>(<span class="fu">colnames</span>(X), <span class="at">collapse =</span> <span class="st">&quot; + &quot;</span>), <span class="st">&quot;)^2 + I(&quot;</span>, </span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>        <span class="fu">paste</span>(<span class="fu">colnames</span>(X), <span class="st">&quot;^2&quot;</span>, <span class="at">collapse =</span> <span class="st">&quot;) + I(&quot;</span>), <span class="st">&quot;)&quot;</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>)</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co"># Generate expanded feature matrix</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>X_expanded <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">model.matrix</span>(formula_expanded, <span class="at">data =</span> X))</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>X_expanded <span class="ot">&lt;-</span> X_expanded[, <span class="sc">-</span><span class="dv">1</span>]  <span class="co"># remove intercept</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co"># Clean column names to avoid formula issues</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="fu">colnames</span>(X_expanded) <span class="ot">&lt;-</span> <span class="fu">make.names</span>(<span class="fu">colnames</span>(X_expanded), <span class="at">unique =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Initial expanded dimensions:&quot;</span>, <span class="fu">ncol</span>(X_expanded), <span class="st">&quot;predictors&quot;</span>))</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Initial expanded dimensions: 20 predictors&quot;</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co"># Limit to 60 predictors</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">ncol</span>(X_expanded) <span class="sc">&gt;</span> <span class="dv">60</span>) {</span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>  X_expanded <span class="ot">&lt;-</span> X_expanded[, <span class="dv">1</span><span class="sc">:</span><span class="dv">60</span>]</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>  <span class="fu">print</span>(<span class="st">&quot;Selected first 60 predictors for analysis&quot;</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>}</span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&quot;  - Original features: 10&quot;</span>)</span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt; [1] &quot;  - Original features: 10&quot;</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&quot;  - Quadratic terms: 10&quot;</span>)</span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt; [1] &quot;  - Quadratic terms: 10&quot;</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&quot;  - Interaction terms: 40&quot;</span>)</span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; [1] &quot;  - Interaction terms: 40&quot;</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="fu">print</span>(<span class="st">&quot;  - Total: 60 predictors&quot;</span>)</span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; [1] &quot;  - Total: 60 predictors&quot;</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co"># Standardize predictors</span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(<span class="fu">scale</span>(X_expanded))</span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a></span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Final dimensions:&quot;</span>, <span class="fu">nrow</span>(X), <span class="st">&quot;observations ×&quot;</span>, <span class="fu">ncol</span>(X), <span class="st">&quot;predictors&quot;</span>))</span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Final dimensions: 442 observations × 20 predictors&quot;</span></span></code></pre></div>
+<p>We create a richer feature space by adding quadratic terms and
+pairwise interactions. This allows the model to capture non-linear
+relationships and interaction effects that may be important for
+predicting diabetes progression.</p>
+</div>
+<div id="prepare-data" class="section level2">
+<h2>Prepare Data</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># 80/20 train-test split</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(X)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>train_idx <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>n, <span class="at">size =</span> <span class="fu">floor</span>(<span class="fl">0.8</span> <span class="sc">*</span> n))</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>X_train <span class="ot">&lt;-</span> X[train_idx, ]</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>y_train <span class="ot">&lt;-</span> y[train_idx]</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>X_test <span class="ot">&lt;-</span> X[<span class="sc">-</span>train_idx, ]</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>y_test <span class="ot">&lt;-</span> y[<span class="sc">-</span>train_idx]</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Training set:&quot;</span>, <span class="fu">length</span>(train_idx), <span class="st">&quot;observations&quot;</span>))</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Training set: 353 observations&quot;</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Test set:&quot;</span>, <span class="fu">length</span>(y_test), <span class="st">&quot;observations&quot;</span>))</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Test set: 89 observations&quot;</span></span></code></pre></div>
+</div>
+<div id="multi-path-forward-selection" class="section level2">
+<h2>Multi-Path Forward Selection</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>paths <span class="ot">&lt;-</span> <span class="fu">build_paths</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">X =</span> X_train,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">y =</span> y_train,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">K =</span> <span class="fu">min</span>(<span class="fu">ncol</span>(X_train), <span class="dv">10</span>),</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">eps =</span> <span class="fl">1e-6</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">delta =</span> <span class="dv">2</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="at">L =</span> <span class="dv">100</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>)</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="fu">print</span>(paths)</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; Multi-Path Forward Selection Result</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; ====================================</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; Family: gaussian</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; Sample size: 353</span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt; Number of predictors: 20</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt; Steps completed: 10</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt; Parameters: eps=1.00e-06, delta=2.00, L=100</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; Models per step:</span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt;   Step 1: 1 models</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt;   Step 2: 1 models</span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt;   Step 3: 1 models</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt;   Step 4: 1 models</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt;   Step 5: 5 models</span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt;   Step 6: 8 models</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt;   Step 7: 6 models</span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a><span class="co">#&gt;   Step 8: 19 models</span></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co">#&gt;   Step 9: 81 models</span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co">#&gt;   Step 10: 100 models</span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a><span class="co">#&gt; Best model at final step (AIC = 3822.54):</span></span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="co">#&gt;   Variables: xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.sex, I.x.2.bmi</span></span></code></pre></div>
+<p>The <code>build_paths()</code> function explores multiple competitive
+models at each step, keeping alternatives within <code>delta = 2</code>
+AIC units of the best model. This generates a forest of candidate models
+rather than a single path.</p>
+</div>
+<div id="stability-analysis" class="section level2">
+<h2>Stability Analysis</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>stab <span class="ot">&lt;-</span> <span class="fu">stability</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="at">X =</span> X_train,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="at">y =</span> y_train,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="at">family =</span> <span class="st">&quot;gaussian&quot;</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">B =</span> <span class="dv">20</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="at">resample_type =</span> <span class="st">&quot;bootstrap&quot;</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="at">K =</span> <span class="fu">min</span>(<span class="fu">ncol</span>(X_train), <span class="dv">10</span>),</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="at">eps =</span> <span class="fl">1e-6</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  <span class="at">delta =</span> <span class="dv">2</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="at">L =</span> <span class="dv">50</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co"># Top 5 most stable predictors</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">sort</span>(stab<span class="sc">$</span>pi, <span class="at">decreasing =</span> <span class="cn">TRUE</span>), <span class="dv">5</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt;      xbmi      xltg      xmap I.x.2.glu       xtc </span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; 0.9926126 0.9923255 0.9412157 0.6645754 0.5819360</span></span></code></pre></div>
+<p>Stability scores (π) measure how frequently each predictor is
+selected across bootstrap resamples. Higher values indicate more
+reliable predictors that consistently appear in good models.</p>
+</div>
+<div id="plausible-models" class="section level2">
+<h2>Plausible Models</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>plaus <span class="ot">&lt;-</span> <span class="fu">plausible_models</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="at">path_result =</span> paths,</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="at">stability_result =</span> stab,</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="at">Delta =</span> <span class="dv">4</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">tau =</span> <span class="fl">0.5</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="at">remove_duplicates =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="at">refit =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="at">X =</span> X_train,</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="at">y =</span> y_train</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>)</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; AIC Filtering:</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;   Total models: 223</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt;   Minimum AIC: 3822.54</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt;   Delta: 4.00</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt;   Models within Delta: 101</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; Stability Filtering:</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt;   Tau threshold: 0.50</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt;   Models with avg stability &gt;= tau: 101</span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; Duplicate Removal:</span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt;   Jaccard threshold: 0.90</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt;   Models after removing duplicates: 101</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; ==============================================</span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; Final Plausible Model Set: 101 models</span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt; ==============================================</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="fu">print</span>(plaus)</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt; Plausible Models</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="co">#&gt; ================</span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="co">#&gt; Number of models: 101</span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="co">#&gt;                                                                       model_id</span></span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="co">#&gt; 1                   I.x.2.age+I.x.2.bmi+I.x.2.glu+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co">#&gt; 2              I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="co">#&gt; 3         I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.sex+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="co">#&gt; 4                             I.x.2.age+I.x.2.glu+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="co">#&gt; 5                        I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a><span class="co">#&gt; 6                   I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a><span class="co">#&gt; 7              I.x.2.age+I.x.2.glu+I.x.2.ltg+xbmi+xhdl+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a><span class="co">#&gt; 8         I.x.2.age+I.x.2.glu+I.x.2.ltg+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="co">#&gt; 9              I.x.2.age+I.x.2.bmi+I.x.2.glu+xage+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a><span class="co">#&gt; 10        I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.sex+xage+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a><span class="co">#&gt; 11                  I.x.2.age+I.x.2.glu+I.x.2.hdl+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a><span class="co">#&gt; 12             I.x.2.age+I.x.2.glu+I.x.2.hdl+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a><span class="co">#&gt; 13        I.x.2.age+I.x.2.glu+I.x.2.hdl+I.x.2.sex+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a><span class="co">#&gt; 14                  I.x.2.age+I.x.2.glu+I.x.2.map+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a><span class="co">#&gt; 15             I.x.2.age+I.x.2.glu+I.x.2.map+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="co">#&gt; 16        I.x.2.age+I.x.2.glu+I.x.2.map+I.x.2.sex+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a><span class="co">#&gt; 17                       I.x.2.age+I.x.2.glu+xage+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a><span class="co">#&gt; 18                  I.x.2.age+I.x.2.glu+I.x.2.sex+xage+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a><span class="co">#&gt; 19             I.x.2.age+I.x.2.glu+I.x.2.sex+xage+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a><span class="co">#&gt; 20        I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.ldl+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a><span class="co">#&gt; 21   I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.ldl+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="co">#&gt; 22             I.x.2.age+I.x.2.bmi+I.x.2.glu+xbmi+xhdl+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a><span class="co">#&gt; 23        I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a><span class="co">#&gt; 24                       I.x.2.age+I.x.2.glu+xbmi+xldl+xltg+xmap+xsex+xtc+xtch</span></span>
+<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a><span class="co">#&gt; 25                  I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc+xtch</span></span>
+<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a><span class="co">#&gt; 26             I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xldl+xltg+xmap+xsex+xtc+xtch</span></span>
+<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a><span class="co">#&gt; 27                       I.x.2.age+I.x.2.glu+xbmi+xhdl+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a><span class="co">#&gt; 28                  I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a><span class="co">#&gt; 29             I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a><span class="co">#&gt; 30                  I.x.2.age+I.x.2.glu+I.x.2.ldl+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a><span class="co">#&gt; 31             I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a><span class="co">#&gt; 32        I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.sex+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a><span class="co">#&gt; 33             I.x.2.age+I.x.2.bmi+I.x.2.glu+xbmi+xglu+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-68"><a href="#cb7-68" tabindex="-1"></a><span class="co">#&gt; 34        I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.sex+xbmi+xglu+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-69"><a href="#cb7-69" tabindex="-1"></a><span class="co">#&gt; 35                  I.x.2.age+I.x.2.glu+I.x.2.tch+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-70"><a href="#cb7-70" tabindex="-1"></a><span class="co">#&gt; 36             I.x.2.age+I.x.2.glu+I.x.2.sex+I.x.2.tch+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-71"><a href="#cb7-71" tabindex="-1"></a><span class="co">#&gt; 37        I.x.2.age+I.x.2.glu+I.x.2.sex+I.x.2.tch+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-72"><a href="#cb7-72" tabindex="-1"></a><span class="co">#&gt; 38                       I.x.2.age+I.x.2.glu+xbmi+xglu+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-73"><a href="#cb7-73" tabindex="-1"></a><span class="co">#&gt; 39                  I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xglu+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-74"><a href="#cb7-74" tabindex="-1"></a><span class="co">#&gt; 40             I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xglu+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-75"><a href="#cb7-75" tabindex="-1"></a><span class="co">#&gt; 41                  I.x.2.age+I.x.2.glu+xbmi+xhdl+xldl+xltg+xmap+xsex+xtc+xtch</span></span>
+<span id="cb7-76"><a href="#cb7-76" tabindex="-1"></a><span class="co">#&gt; 42             I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap+xtc+xtch</span></span>
+<span id="cb7-77"><a href="#cb7-77" tabindex="-1"></a><span class="co">#&gt; 43             I.x.2.age+I.x.2.glu+I.x.2.map+xage+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-78"><a href="#cb7-78" tabindex="-1"></a><span class="co">#&gt; 44        I.x.2.age+I.x.2.glu+I.x.2.map+I.x.2.sex+xage+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-79"><a href="#cb7-79" tabindex="-1"></a><span class="co">#&gt; 45                                      I.x.2.glu+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-80"><a href="#cb7-80" tabindex="-1"></a><span class="co">#&gt; 46                                 I.x.2.glu+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-81"><a href="#cb7-81" tabindex="-1"></a><span class="co">#&gt; 47             I.x.2.age+I.x.2.glu+I.x.2.hdl+xage+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-82"><a href="#cb7-82" tabindex="-1"></a><span class="co">#&gt; 48        I.x.2.age+I.x.2.glu+I.x.2.hdl+I.x.2.sex+xage+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-83"><a href="#cb7-83" tabindex="-1"></a><span class="co">#&gt; 49        I.x.2.age+I.x.2.glu+I.x.2.hdl+I.x.2.ldl+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-84"><a href="#cb7-84" tabindex="-1"></a><span class="co">#&gt; 50   I.x.2.age+I.x.2.glu+I.x.2.hdl+I.x.2.ldl+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-85"><a href="#cb7-85" tabindex="-1"></a><span class="co">#&gt; 51        I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.map+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-86"><a href="#cb7-86" tabindex="-1"></a><span class="co">#&gt; 52   I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.map+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-87"><a href="#cb7-87" tabindex="-1"></a><span class="co">#&gt; 53             I.x.2.age+I.x.2.glu+I.x.2.map+xbmi+xhdl+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-88"><a href="#cb7-88" tabindex="-1"></a><span class="co">#&gt; 54        I.x.2.age+I.x.2.glu+I.x.2.map+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-89"><a href="#cb7-89" tabindex="-1"></a><span class="co">#&gt; 55            I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.ltg+xbmi+xhdl+xltg+xmap+xsex</span></span>
+<span id="cb7-90"><a href="#cb7-90" tabindex="-1"></a><span class="co">#&gt; 56       I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.ltg+I.x.2.sex+xbmi+xhdl+xltg+xmap</span></span>
+<span id="cb7-91"><a href="#cb7-91" tabindex="-1"></a><span class="co">#&gt; 57  I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.ltg+I.x.2.sex+xbmi+xhdl+xltg+xmap+xsex</span></span>
+<span id="cb7-92"><a href="#cb7-92" tabindex="-1"></a><span class="co">#&gt; 58                  I.x.2.age+I.x.2.glu+xage+xbmi+xldl+xltg+xmap+xsex+xtc+xtch</span></span>
+<span id="cb7-93"><a href="#cb7-93" tabindex="-1"></a><span class="co">#&gt; 59             I.x.2.age+I.x.2.glu+I.x.2.sex+xage+xbmi+xldl+xltg+xmap+xtc+xtch</span></span>
+<span id="cb7-94"><a href="#cb7-94" tabindex="-1"></a><span class="co">#&gt; 60             I.x.2.age+I.x.2.glu+I.x.2.hdl+xbmi+xhdl+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-95"><a href="#cb7-95" tabindex="-1"></a><span class="co">#&gt; 61        I.x.2.age+I.x.2.glu+I.x.2.hdl+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-96"><a href="#cb7-96" tabindex="-1"></a><span class="co">#&gt; 62             I.x.2.age+I.x.2.glu+I.x.2.map+xbmi+xglu+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-97"><a href="#cb7-97" tabindex="-1"></a><span class="co">#&gt; 63        I.x.2.age+I.x.2.glu+I.x.2.map+I.x.2.sex+xbmi+xglu+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-98"><a href="#cb7-98" tabindex="-1"></a><span class="co">#&gt; 64             I.x.2.age+I.x.2.glu+I.x.2.hdl+xbmi+xglu+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-99"><a href="#cb7-99" tabindex="-1"></a><span class="co">#&gt; 65        I.x.2.age+I.x.2.glu+I.x.2.hdl+I.x.2.sex+xbmi+xglu+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-100"><a href="#cb7-100" tabindex="-1"></a><span class="co">#&gt; 66        I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.tch+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-101"><a href="#cb7-101" tabindex="-1"></a><span class="co">#&gt; 67   I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.sex+I.x.2.tch+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-102"><a href="#cb7-102" tabindex="-1"></a><span class="co">#&gt; 68   I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.ltg+I.x.2.sex+xbmi+xhdl+xltg+xmap+xtc</span></span>
+<span id="cb7-103"><a href="#cb7-103" tabindex="-1"></a><span class="co">#&gt; 69        I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.ltg+xbmi+xhdl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-104"><a href="#cb7-104" tabindex="-1"></a><span class="co">#&gt; 70         I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.tc+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-105"><a href="#cb7-105" tabindex="-1"></a><span class="co">#&gt; 71    I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.sex+I.x.2.tc+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-106"><a href="#cb7-106" tabindex="-1"></a><span class="co">#&gt; 72                  I.x.2.age+I.x.2.glu+I.x.2.ltg+xbmi+xhdl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-107"><a href="#cb7-107" tabindex="-1"></a><span class="co">#&gt; 73             I.x.2.age+I.x.2.glu+I.x.2.ltg+I.x.2.sex+xbmi+xhdl+xltg+xmap+xtc</span></span>
+<span id="cb7-108"><a href="#cb7-108" tabindex="-1"></a><span class="co">#&gt; 74        I.x.2.age+I.x.2.glu+I.x.2.ltg+I.x.2.sex+xbmi+xhdl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-109"><a href="#cb7-109" tabindex="-1"></a><span class="co">#&gt; 75             I.x.2.age+I.x.2.glu+I.x.2.ldl+xbmi+xldl+xltg+xmap+xsex+xtc+xtch</span></span>
+<span id="cb7-110"><a href="#cb7-110" tabindex="-1"></a><span class="co">#&gt; 76        I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.sex+xbmi+xldl+xltg+xmap+xtc+xtch</span></span>
+<span id="cb7-111"><a href="#cb7-111" tabindex="-1"></a><span class="co">#&gt; 77             I.x.2.age+I.x.2.glu+I.x.2.ldl+xage+xbmi+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-112"><a href="#cb7-112" tabindex="-1"></a><span class="co">#&gt; 78        I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.sex+xage+xbmi+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-113"><a href="#cb7-113" tabindex="-1"></a><span class="co">#&gt; 79                  I.x.2.age+I.x.2.glu+xage+xbmi+xglu+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-114"><a href="#cb7-114" tabindex="-1"></a><span class="co">#&gt; 80             I.x.2.age+I.x.2.glu+I.x.2.sex+xage+xbmi+xglu+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-115"><a href="#cb7-115" tabindex="-1"></a><span class="co">#&gt; 81             I.x.2.age+I.x.2.glu+I.x.2.ldl+xbmi+xhdl+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-116"><a href="#cb7-116" tabindex="-1"></a><span class="co">#&gt; 82        I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-117"><a href="#cb7-117" tabindex="-1"></a><span class="co">#&gt; 83                  I.x.2.age+I.x.2.glu+xbmi+xglu+xldl+xltg+xmap+xsex+xtc+xtch</span></span>
+<span id="cb7-118"><a href="#cb7-118" tabindex="-1"></a><span class="co">#&gt; 84             I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xglu+xldl+xltg+xmap+xtc+xtch</span></span>
+<span id="cb7-119"><a href="#cb7-119" tabindex="-1"></a><span class="co">#&gt; 85       I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.ltg+xbmi+xhdl+xldl+xltg+xmap+xsex</span></span>
+<span id="cb7-120"><a href="#cb7-120" tabindex="-1"></a><span class="co">#&gt; 86  I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.ltg+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap</span></span>
+<span id="cb7-121"><a href="#cb7-121" tabindex="-1"></a><span class="co">#&gt; 87                  I.x.2.age+I.x.2.glu+xbmi+xglu+xhdl+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-122"><a href="#cb7-122" tabindex="-1"></a><span class="co">#&gt; 88             I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xglu+xhdl+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-123"><a href="#cb7-123" tabindex="-1"></a><span class="co">#&gt; 89                 I.x.2.age+I.x.2.glu+I.x.2.ltg+xbmi+xhdl+xldl+xltg+xmap+xsex</span></span>
+<span id="cb7-124"><a href="#cb7-124" tabindex="-1"></a><span class="co">#&gt; 90            I.x.2.age+I.x.2.glu+I.x.2.ltg+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap</span></span>
+<span id="cb7-125"><a href="#cb7-125" tabindex="-1"></a><span class="co">#&gt; 91       I.x.2.age+I.x.2.glu+I.x.2.ltg+I.x.2.sex+xbmi+xhdl+xldl+xltg+xmap+xsex</span></span>
+<span id="cb7-126"><a href="#cb7-126" tabindex="-1"></a><span class="co">#&gt; 92             I.x.2.age+I.x.2.glu+I.x.2.ldl+xbmi+xglu+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-127"><a href="#cb7-127" tabindex="-1"></a><span class="co">#&gt; 93        I.x.2.age+I.x.2.glu+I.x.2.ldl+I.x.2.sex+xbmi+xglu+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-128"><a href="#cb7-128" tabindex="-1"></a><span class="co">#&gt; 94                            I.x.2.age+I.x.2.glu+xbmi+xhdl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-129"><a href="#cb7-129" tabindex="-1"></a><span class="co">#&gt; 95                       I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xhdl+xltg+xmap+xtc</span></span>
+<span id="cb7-130"><a href="#cb7-130" tabindex="-1"></a><span class="co">#&gt; 96                  I.x.2.age+I.x.2.glu+I.x.2.sex+xbmi+xhdl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-131"><a href="#cb7-131" tabindex="-1"></a><span class="co">#&gt; 97             I.x.2.age+I.x.2.glu+I.x.2.tch+xbmi+xglu+xldl+xltg+xmap+xsex+xtc</span></span>
+<span id="cb7-132"><a href="#cb7-132" tabindex="-1"></a><span class="co">#&gt; 98        I.x.2.age+I.x.2.glu+I.x.2.sex+I.x.2.tch+xbmi+xglu+xldl+xltg+xmap+xtc</span></span>
+<span id="cb7-133"><a href="#cb7-133" tabindex="-1"></a><span class="co">#&gt; 99                      I.x.2.age+I.x.2.bmi+I.x.2.glu+xbmi+xhdl+xltg+xmap+xsex</span></span>
+<span id="cb7-134"><a href="#cb7-134" tabindex="-1"></a><span class="co">#&gt; 100                I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.sex+xbmi+xhdl+xltg+xmap</span></span>
+<span id="cb7-135"><a href="#cb7-135" tabindex="-1"></a><span class="co">#&gt; 101           I.x.2.age+I.x.2.bmi+I.x.2.glu+I.x.2.sex+xbmi+xhdl+xltg+xmap+xsex</span></span>
+<span id="cb7-136"><a href="#cb7-136" tabindex="-1"></a><span class="co">#&gt;     size</span></span>
+<span id="cb7-137"><a href="#cb7-137" tabindex="-1"></a><span class="co">#&gt; 1      9</span></span>
+<span id="cb7-138"><a href="#cb7-138" tabindex="-1"></a><span class="co">#&gt; 2      9</span></span>
+<span id="cb7-139"><a href="#cb7-139" tabindex="-1"></a><span class="co">#&gt; 3     10</span></span>
+<span id="cb7-140"><a href="#cb7-140" tabindex="-1"></a><span class="co">#&gt; 4      8</span></span>
+<span id="cb7-141"><a href="#cb7-141" tabindex="-1"></a><span class="co">#&gt; 5      8</span></span>
+<span id="cb7-142"><a href="#cb7-142" tabindex="-1"></a><span class="co">#&gt; 6      9</span></span>
+<span id="cb7-143"><a href="#cb7-143" tabindex="-1"></a><span class="co">#&gt; 7     10</span></span>
+<span id="cb7-144"><a href="#cb7-144" tabindex="-1"></a><span class="co">#&gt; 8     10</span></span>
+<span id="cb7-145"><a href="#cb7-145" tabindex="-1"></a><span class="co">#&gt; 9     10</span></span>
+<span id="cb7-146"><a href="#cb7-146" tabindex="-1"></a><span class="co">#&gt; 10    10</span></span>
+<span id="cb7-147"><a href="#cb7-147" tabindex="-1"></a><span class="co">#&gt; 11     9</span></span>
+<span id="cb7-148"><a href="#cb7-148" tabindex="-1"></a><span class="co">#&gt; 12     9</span></span>
+<span id="cb7-149"><a href="#cb7-149" tabindex="-1"></a><span class="co">#&gt; 13    10</span></span>
+<span id="cb7-150"><a href="#cb7-150" tabindex="-1"></a><span class="co">#&gt; 14     9</span></span>
+<span id="cb7-151"><a href="#cb7-151" tabindex="-1"></a><span class="co">#&gt; 15     9</span></span>
+<span id="cb7-152"><a href="#cb7-152" tabindex="-1"></a><span class="co">#&gt; 16    10</span></span>
+<span id="cb7-153"><a href="#cb7-153" tabindex="-1"></a><span class="co">#&gt; 17     9</span></span>
+<span id="cb7-154"><a href="#cb7-154" tabindex="-1"></a><span class="co">#&gt; 18     9</span></span>
+<span id="cb7-155"><a href="#cb7-155" tabindex="-1"></a><span class="co">#&gt; 19    10</span></span>
+<span id="cb7-156"><a href="#cb7-156" tabindex="-1"></a><span class="co">#&gt; 20    10</span></span>
+<span id="cb7-157"><a href="#cb7-157" tabindex="-1"></a><span class="co">#&gt; 21    10</span></span>
+<span id="cb7-158"><a href="#cb7-158" tabindex="-1"></a><span class="co">#&gt; 22    10</span></span>
+<span id="cb7-159"><a href="#cb7-159" tabindex="-1"></a><span class="co">#&gt; 23    10</span></span>
+<span id="cb7-160"><a href="#cb7-160" tabindex="-1"></a><span class="co">#&gt; 24     9</span></span>
+<span id="cb7-161"><a href="#cb7-161" tabindex="-1"></a><span class="co">#&gt; 25     9</span></span>
+<span id="cb7-162"><a href="#cb7-162" tabindex="-1"></a><span class="co">#&gt; 26    10</span></span>
+<span id="cb7-163"><a href="#cb7-163" tabindex="-1"></a><span class="co">#&gt; 27     9</span></span>
+<span id="cb7-164"><a href="#cb7-164" tabindex="-1"></a><span class="co">#&gt; 28     9</span></span>
+<span id="cb7-165"><a href="#cb7-165" tabindex="-1"></a><span class="co">#&gt; 29    10</span></span>
+<span id="cb7-166"><a href="#cb7-166" tabindex="-1"></a><span class="co">#&gt; 30     9</span></span>
+<span id="cb7-167"><a href="#cb7-167" tabindex="-1"></a><span class="co">#&gt; 31     9</span></span>
+<span id="cb7-168"><a href="#cb7-168" tabindex="-1"></a><span class="co">#&gt; 32    10</span></span>
+<span id="cb7-169"><a href="#cb7-169" tabindex="-1"></a><span class="co">#&gt; 33    10</span></span>
+<span id="cb7-170"><a href="#cb7-170" tabindex="-1"></a><span class="co">#&gt; 34    10</span></span>
+<span id="cb7-171"><a href="#cb7-171" tabindex="-1"></a><span class="co">#&gt; 35     9</span></span>
+<span id="cb7-172"><a href="#cb7-172" tabindex="-1"></a><span class="co">#&gt; 36     9</span></span>
+<span id="cb7-173"><a href="#cb7-173" tabindex="-1"></a><span class="co">#&gt; 37    10</span></span>
+<span id="cb7-174"><a href="#cb7-174" tabindex="-1"></a><span class="co">#&gt; 38     9</span></span>
+<span id="cb7-175"><a href="#cb7-175" tabindex="-1"></a><span class="co">#&gt; 39     9</span></span>
+<span id="cb7-176"><a href="#cb7-176" tabindex="-1"></a><span class="co">#&gt; 40    10</span></span>
+<span id="cb7-177"><a href="#cb7-177" tabindex="-1"></a><span class="co">#&gt; 41    10</span></span>
+<span id="cb7-178"><a href="#cb7-178" tabindex="-1"></a><span class="co">#&gt; 42    10</span></span>
+<span id="cb7-179"><a href="#cb7-179" tabindex="-1"></a><span class="co">#&gt; 43    10</span></span>
+<span id="cb7-180"><a href="#cb7-180" tabindex="-1"></a><span class="co">#&gt; 44    10</span></span>
+<span id="cb7-181"><a href="#cb7-181" tabindex="-1"></a><span class="co">#&gt; 45     7</span></span>
+<span id="cb7-182"><a href="#cb7-182" tabindex="-1"></a><span class="co">#&gt; 46     7</span></span>
+<span id="cb7-183"><a href="#cb7-183" tabindex="-1"></a><span class="co">#&gt; 47    10</span></span>
+<span id="cb7-184"><a href="#cb7-184" tabindex="-1"></a><span class="co">#&gt; 48    10</span></span>
+<span id="cb7-185"><a href="#cb7-185" tabindex="-1"></a><span class="co">#&gt; 49    10</span></span>
+<span id="cb7-186"><a href="#cb7-186" tabindex="-1"></a><span class="co">#&gt; 50    10</span></span>
+<span id="cb7-187"><a href="#cb7-187" tabindex="-1"></a><span class="co">#&gt; 51    10</span></span>
+<span id="cb7-188"><a href="#cb7-188" tabindex="-1"></a><span class="co">#&gt; 52    10</span></span>
+<span id="cb7-189"><a href="#cb7-189" tabindex="-1"></a><span class="co">#&gt; 53    10</span></span>
+<span id="cb7-190"><a href="#cb7-190" tabindex="-1"></a><span class="co">#&gt; 54    10</span></span>
+<span id="cb7-191"><a href="#cb7-191" tabindex="-1"></a><span class="co">#&gt; 55     9</span></span>
+<span id="cb7-192"><a href="#cb7-192" tabindex="-1"></a><span class="co">#&gt; 56     9</span></span>
+<span id="cb7-193"><a href="#cb7-193" tabindex="-1"></a><span class="co">#&gt; 57    10</span></span>
+<span id="cb7-194"><a href="#cb7-194" tabindex="-1"></a><span class="co">#&gt; 58    10</span></span>
+<span id="cb7-195"><a href="#cb7-195" tabindex="-1"></a><span class="co">#&gt; 59    10</span></span>
+<span id="cb7-196"><a href="#cb7-196" tabindex="-1"></a><span class="co">#&gt; 60    10</span></span>
+<span id="cb7-197"><a href="#cb7-197" tabindex="-1"></a><span class="co">#&gt; 61    10</span></span>
+<span id="cb7-198"><a href="#cb7-198" tabindex="-1"></a><span class="co">#&gt; 62    10</span></span>
+<span id="cb7-199"><a href="#cb7-199" tabindex="-1"></a><span class="co">#&gt; 63    10</span></span>
+<span id="cb7-200"><a href="#cb7-200" tabindex="-1"></a><span class="co">#&gt; 64    10</span></span>
+<span id="cb7-201"><a href="#cb7-201" tabindex="-1"></a><span class="co">#&gt; 65    10</span></span>
+<span id="cb7-202"><a href="#cb7-202" tabindex="-1"></a><span class="co">#&gt; 66    10</span></span>
+<span id="cb7-203"><a href="#cb7-203" tabindex="-1"></a><span class="co">#&gt; 67    10</span></span>
+<span id="cb7-204"><a href="#cb7-204" tabindex="-1"></a><span class="co">#&gt; 68    10</span></span>
+<span id="cb7-205"><a href="#cb7-205" tabindex="-1"></a><span class="co">#&gt; 69    10</span></span>
+<span id="cb7-206"><a href="#cb7-206" tabindex="-1"></a><span class="co">#&gt; 70    10</span></span>
+<span id="cb7-207"><a href="#cb7-207" tabindex="-1"></a><span class="co">#&gt; 71    10</span></span>
+<span id="cb7-208"><a href="#cb7-208" tabindex="-1"></a><span class="co">#&gt; 72     9</span></span>
+<span id="cb7-209"><a href="#cb7-209" tabindex="-1"></a><span class="co">#&gt; 73     9</span></span>
+<span id="cb7-210"><a href="#cb7-210" tabindex="-1"></a><span class="co">#&gt; 74    10</span></span>
+<span id="cb7-211"><a href="#cb7-211" tabindex="-1"></a><span class="co">#&gt; 75    10</span></span>
+<span id="cb7-212"><a href="#cb7-212" tabindex="-1"></a><span class="co">#&gt; 76    10</span></span>
+<span id="cb7-213"><a href="#cb7-213" tabindex="-1"></a><span class="co">#&gt; 77    10</span></span>
+<span id="cb7-214"><a href="#cb7-214" tabindex="-1"></a><span class="co">#&gt; 78    10</span></span>
+<span id="cb7-215"><a href="#cb7-215" tabindex="-1"></a><span class="co">#&gt; 79    10</span></span>
+<span id="cb7-216"><a href="#cb7-216" tabindex="-1"></a><span class="co">#&gt; 80    10</span></span>
+<span id="cb7-217"><a href="#cb7-217" tabindex="-1"></a><span class="co">#&gt; 81    10</span></span>
+<span id="cb7-218"><a href="#cb7-218" tabindex="-1"></a><span class="co">#&gt; 82    10</span></span>
+<span id="cb7-219"><a href="#cb7-219" tabindex="-1"></a><span class="co">#&gt; 83    10</span></span>
+<span id="cb7-220"><a href="#cb7-220" tabindex="-1"></a><span class="co">#&gt; 84    10</span></span>
+<span id="cb7-221"><a href="#cb7-221" tabindex="-1"></a><span class="co">#&gt; 85    10</span></span>
+<span id="cb7-222"><a href="#cb7-222" tabindex="-1"></a><span class="co">#&gt; 86    10</span></span>
+<span id="cb7-223"><a href="#cb7-223" tabindex="-1"></a><span class="co">#&gt; 87    10</span></span>
+<span id="cb7-224"><a href="#cb7-224" tabindex="-1"></a><span class="co">#&gt; 88    10</span></span>
+<span id="cb7-225"><a href="#cb7-225" tabindex="-1"></a><span class="co">#&gt; 89     9</span></span>
+<span id="cb7-226"><a href="#cb7-226" tabindex="-1"></a><span class="co">#&gt; 90     9</span></span>
+<span id="cb7-227"><a href="#cb7-227" tabindex="-1"></a><span class="co">#&gt; 91    10</span></span>
+<span id="cb7-228"><a href="#cb7-228" tabindex="-1"></a><span class="co">#&gt; 92    10</span></span>
+<span id="cb7-229"><a href="#cb7-229" tabindex="-1"></a><span class="co">#&gt; 93    10</span></span>
+<span id="cb7-230"><a href="#cb7-230" tabindex="-1"></a><span class="co">#&gt; 94     8</span></span>
+<span id="cb7-231"><a href="#cb7-231" tabindex="-1"></a><span class="co">#&gt; 95     8</span></span>
+<span id="cb7-232"><a href="#cb7-232" tabindex="-1"></a><span class="co">#&gt; 96     9</span></span>
+<span id="cb7-233"><a href="#cb7-233" tabindex="-1"></a><span class="co">#&gt; 97    10</span></span>
+<span id="cb7-234"><a href="#cb7-234" tabindex="-1"></a><span class="co">#&gt; 98    10</span></span>
+<span id="cb7-235"><a href="#cb7-235" tabindex="-1"></a><span class="co">#&gt; 99     8</span></span>
+<span id="cb7-236"><a href="#cb7-236" tabindex="-1"></a><span class="co">#&gt; 100    8</span></span>
+<span id="cb7-237"><a href="#cb7-237" tabindex="-1"></a><span class="co">#&gt; 101    9</span></span>
+<span id="cb7-238"><a href="#cb7-238" tabindex="-1"></a><span class="co">#&gt;                                                                               variables</span></span>
+<span id="cb7-239"><a href="#cb7-239" tabindex="-1"></a><span class="co">#&gt; 1                    xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.bmi</span></span>
+<span id="cb7-240"><a href="#cb7-240" tabindex="-1"></a><span class="co">#&gt; 2               xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.bmi</span></span>
+<span id="cb7-241"><a href="#cb7-241" tabindex="-1"></a><span class="co">#&gt; 3         xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.sex, I.x.2.bmi</span></span>
+<span id="cb7-242"><a href="#cb7-242" tabindex="-1"></a><span class="co">#&gt; 4                               xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age</span></span>
+<span id="cb7-243"><a href="#cb7-243" tabindex="-1"></a><span class="co">#&gt; 5                          xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl</span></span>
+<span id="cb7-244"><a href="#cb7-244" tabindex="-1"></a><span class="co">#&gt; 6                    xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.sex</span></span>
+<span id="cb7-245"><a href="#cb7-245" tabindex="-1"></a><span class="co">#&gt; 7              xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, xtc, xldl, I.x.2.ltg</span></span>
+<span id="cb7-246"><a href="#cb7-246" tabindex="-1"></a><span class="co">#&gt; 8         xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xhdl, I.x.2.ltg</span></span>
+<span id="cb7-247"><a href="#cb7-247" tabindex="-1"></a><span class="co">#&gt; 9              xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xage, I.x.2.bmi</span></span>
+<span id="cb7-248"><a href="#cb7-248" tabindex="-1"></a><span class="co">#&gt; 10        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xage, I.x.2.bmi</span></span>
+<span id="cb7-249"><a href="#cb7-249" tabindex="-1"></a><span class="co">#&gt; 11                   xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.hdl</span></span>
+<span id="cb7-250"><a href="#cb7-250" tabindex="-1"></a><span class="co">#&gt; 12              xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.hdl</span></span>
+<span id="cb7-251"><a href="#cb7-251" tabindex="-1"></a><span class="co">#&gt; 13        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.sex, I.x.2.hdl</span></span>
+<span id="cb7-252"><a href="#cb7-252" tabindex="-1"></a><span class="co">#&gt; 14                   xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.map</span></span>
+<span id="cb7-253"><a href="#cb7-253" tabindex="-1"></a><span class="co">#&gt; 15              xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.map</span></span>
+<span id="cb7-254"><a href="#cb7-254" tabindex="-1"></a><span class="co">#&gt; 16        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.sex, I.x.2.map</span></span>
+<span id="cb7-255"><a href="#cb7-255" tabindex="-1"></a><span class="co">#&gt; 17                        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xage</span></span>
+<span id="cb7-256"><a href="#cb7-256" tabindex="-1"></a><span class="co">#&gt; 18                   xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xage</span></span>
+<span id="cb7-257"><a href="#cb7-257" tabindex="-1"></a><span class="co">#&gt; 19             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xage, I.x.2.sex</span></span>
+<span id="cb7-258"><a href="#cb7-258" tabindex="-1"></a><span class="co">#&gt; 20        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.ldl, I.x.2.bmi</span></span>
+<span id="cb7-259"><a href="#cb7-259" tabindex="-1"></a><span class="co">#&gt; 21   xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.ldl, I.x.2.bmi</span></span>
+<span id="cb7-260"><a href="#cb7-260" tabindex="-1"></a><span class="co">#&gt; 22             xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, xtc, xldl, I.x.2.bmi</span></span>
+<span id="cb7-261"><a href="#cb7-261" tabindex="-1"></a><span class="co">#&gt; 23        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xhdl, I.x.2.bmi</span></span>
+<span id="cb7-262"><a href="#cb7-262" tabindex="-1"></a><span class="co">#&gt; 24                        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xtch</span></span>
+<span id="cb7-263"><a href="#cb7-263" tabindex="-1"></a><span class="co">#&gt; 25                   xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xtch</span></span>
+<span id="cb7-264"><a href="#cb7-264" tabindex="-1"></a><span class="co">#&gt; 26             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.sex, xtch</span></span>
+<span id="cb7-265"><a href="#cb7-265" tabindex="-1"></a><span class="co">#&gt; 27                        xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, xtc, xldl</span></span>
+<span id="cb7-266"><a href="#cb7-266" tabindex="-1"></a><span class="co">#&gt; 28                   xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xhdl</span></span>
+<span id="cb7-267"><a href="#cb7-267" tabindex="-1"></a><span class="co">#&gt; 29             xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, xtc, xldl, I.x.2.sex</span></span>
+<span id="cb7-268"><a href="#cb7-268" tabindex="-1"></a><span class="co">#&gt; 30                   xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.ldl</span></span>
+<span id="cb7-269"><a href="#cb7-269" tabindex="-1"></a><span class="co">#&gt; 31              xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.ldl</span></span>
+<span id="cb7-270"><a href="#cb7-270" tabindex="-1"></a><span class="co">#&gt; 32        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.sex, I.x.2.ldl</span></span>
+<span id="cb7-271"><a href="#cb7-271" tabindex="-1"></a><span class="co">#&gt; 33             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu, I.x.2.bmi</span></span>
+<span id="cb7-272"><a href="#cb7-272" tabindex="-1"></a><span class="co">#&gt; 34        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xglu, I.x.2.bmi</span></span>
+<span id="cb7-273"><a href="#cb7-273" tabindex="-1"></a><span class="co">#&gt; 35                   xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.tch</span></span>
+<span id="cb7-274"><a href="#cb7-274" tabindex="-1"></a><span class="co">#&gt; 36              xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.tch</span></span>
+<span id="cb7-275"><a href="#cb7-275" tabindex="-1"></a><span class="co">#&gt; 37        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.sex, I.x.2.tch</span></span>
+<span id="cb7-276"><a href="#cb7-276" tabindex="-1"></a><span class="co">#&gt; 38                        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu</span></span>
+<span id="cb7-277"><a href="#cb7-277" tabindex="-1"></a><span class="co">#&gt; 39                   xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xglu</span></span>
+<span id="cb7-278"><a href="#cb7-278" tabindex="-1"></a><span class="co">#&gt; 40             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu, I.x.2.sex</span></span>
+<span id="cb7-279"><a href="#cb7-279" tabindex="-1"></a><span class="co">#&gt; 41                  xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, xtc, xldl, xtch</span></span>
+<span id="cb7-280"><a href="#cb7-280" tabindex="-1"></a><span class="co">#&gt; 42             xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xhdl, xtch</span></span>
+<span id="cb7-281"><a href="#cb7-281" tabindex="-1"></a><span class="co">#&gt; 43             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xage, I.x.2.map</span></span>
+<span id="cb7-282"><a href="#cb7-282" tabindex="-1"></a><span class="co">#&gt; 44        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xage, I.x.2.map</span></span>
+<span id="cb7-283"><a href="#cb7-283" tabindex="-1"></a><span class="co">#&gt; 45                                         xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl</span></span>
+<span id="cb7-284"><a href="#cb7-284" tabindex="-1"></a><span class="co">#&gt; 46                                    xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.sex, xldl</span></span>
+<span id="cb7-285"><a href="#cb7-285" tabindex="-1"></a><span class="co">#&gt; 47             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xage, I.x.2.hdl</span></span>
+<span id="cb7-286"><a href="#cb7-286" tabindex="-1"></a><span class="co">#&gt; 48        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xage, I.x.2.hdl</span></span>
+<span id="cb7-287"><a href="#cb7-287" tabindex="-1"></a><span class="co">#&gt; 49        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.ldl, I.x.2.hdl</span></span>
+<span id="cb7-288"><a href="#cb7-288" tabindex="-1"></a><span class="co">#&gt; 50   xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.ldl, I.x.2.hdl</span></span>
+<span id="cb7-289"><a href="#cb7-289" tabindex="-1"></a><span class="co">#&gt; 51        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.ldl, I.x.2.map</span></span>
+<span id="cb7-290"><a href="#cb7-290" tabindex="-1"></a><span class="co">#&gt; 52   xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.ldl, I.x.2.map</span></span>
+<span id="cb7-291"><a href="#cb7-291" tabindex="-1"></a><span class="co">#&gt; 53             xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.map, xtc, xldl</span></span>
+<span id="cb7-292"><a href="#cb7-292" tabindex="-1"></a><span class="co">#&gt; 54        xbmi, xltg, xmap, I.x.2.glu, xhdl, I.x.2.sex, I.x.2.age, I.x.2.map, xtc, xldl</span></span>
+<span id="cb7-293"><a href="#cb7-293" tabindex="-1"></a><span class="co">#&gt; 55             xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.bmi, I.x.2.ltg</span></span>
+<span id="cb7-294"><a href="#cb7-294" tabindex="-1"></a><span class="co">#&gt; 56        xbmi, xltg, xmap, I.x.2.glu, xhdl, I.x.2.sex, I.x.2.age, I.x.2.bmi, I.x.2.ltg</span></span>
+<span id="cb7-295"><a href="#cb7-295" tabindex="-1"></a><span class="co">#&gt; 57  xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.sex, I.x.2.bmi, I.x.2.ltg</span></span>
+<span id="cb7-296"><a href="#cb7-296" tabindex="-1"></a><span class="co">#&gt; 58                  xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xage, xtch</span></span>
+<span id="cb7-297"><a href="#cb7-297" tabindex="-1"></a><span class="co">#&gt; 59             xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xage, xtch</span></span>
+<span id="cb7-298"><a href="#cb7-298" tabindex="-1"></a><span class="co">#&gt; 60             xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.hdl, xtc, xldl</span></span>
+<span id="cb7-299"><a href="#cb7-299" tabindex="-1"></a><span class="co">#&gt; 61        xbmi, xltg, xmap, I.x.2.glu, xhdl, I.x.2.sex, I.x.2.age, I.x.2.hdl, xtc, xldl</span></span>
+<span id="cb7-300"><a href="#cb7-300" tabindex="-1"></a><span class="co">#&gt; 62             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu, I.x.2.map</span></span>
+<span id="cb7-301"><a href="#cb7-301" tabindex="-1"></a><span class="co">#&gt; 63        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xglu, I.x.2.map</span></span>
+<span id="cb7-302"><a href="#cb7-302" tabindex="-1"></a><span class="co">#&gt; 64             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu, I.x.2.hdl</span></span>
+<span id="cb7-303"><a href="#cb7-303" tabindex="-1"></a><span class="co">#&gt; 65        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xglu, I.x.2.hdl</span></span>
+<span id="cb7-304"><a href="#cb7-304" tabindex="-1"></a><span class="co">#&gt; 66        xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.ldl, I.x.2.tch</span></span>
+<span id="cb7-305"><a href="#cb7-305" tabindex="-1"></a><span class="co">#&gt; 67   xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.ldl, I.x.2.tch</span></span>
+<span id="cb7-306"><a href="#cb7-306" tabindex="-1"></a><span class="co">#&gt; 68   xbmi, xltg, xmap, I.x.2.glu, xhdl, I.x.2.sex, I.x.2.age, I.x.2.bmi, xtc, I.x.2.ltg</span></span>
+<span id="cb7-307"><a href="#cb7-307" tabindex="-1"></a><span class="co">#&gt; 69        xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.bmi, xtc, I.x.2.ltg</span></span>
+<span id="cb7-308"><a href="#cb7-308" tabindex="-1"></a><span class="co">#&gt; 70         xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.ldl, I.x.2.tc</span></span>
+<span id="cb7-309"><a href="#cb7-309" tabindex="-1"></a><span class="co">#&gt; 71    xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.ldl, I.x.2.tc</span></span>
+<span id="cb7-310"><a href="#cb7-310" tabindex="-1"></a><span class="co">#&gt; 72                   xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, xtc, I.x.2.ltg</span></span>
+<span id="cb7-311"><a href="#cb7-311" tabindex="-1"></a><span class="co">#&gt; 73              xbmi, xltg, xmap, I.x.2.glu, xhdl, I.x.2.sex, I.x.2.age, xtc, I.x.2.ltg</span></span>
+<span id="cb7-312"><a href="#cb7-312" tabindex="-1"></a><span class="co">#&gt; 74        xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.sex, xtc, I.x.2.ltg</span></span>
+<span id="cb7-313"><a href="#cb7-313" tabindex="-1"></a><span class="co">#&gt; 75             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.ldl, xtch</span></span>
+<span id="cb7-314"><a href="#cb7-314" tabindex="-1"></a><span class="co">#&gt; 76        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.ldl, xtch</span></span>
+<span id="cb7-315"><a href="#cb7-315" tabindex="-1"></a><span class="co">#&gt; 77             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.ldl, xage</span></span>
+<span id="cb7-316"><a href="#cb7-316" tabindex="-1"></a><span class="co">#&gt; 78        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.ldl, xage</span></span>
+<span id="cb7-317"><a href="#cb7-317" tabindex="-1"></a><span class="co">#&gt; 79                  xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu, xage</span></span>
+<span id="cb7-318"><a href="#cb7-318" tabindex="-1"></a><span class="co">#&gt; 80             xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xglu, xage</span></span>
+<span id="cb7-319"><a href="#cb7-319" tabindex="-1"></a><span class="co">#&gt; 81             xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.ldl, xtc, xldl</span></span>
+<span id="cb7-320"><a href="#cb7-320" tabindex="-1"></a><span class="co">#&gt; 82        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, I.x.2.ldl, xhdl</span></span>
+<span id="cb7-321"><a href="#cb7-321" tabindex="-1"></a><span class="co">#&gt; 83                  xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu, xtch</span></span>
+<span id="cb7-322"><a href="#cb7-322" tabindex="-1"></a><span class="co">#&gt; 84             xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xglu, xtch</span></span>
+<span id="cb7-323"><a href="#cb7-323" tabindex="-1"></a><span class="co">#&gt; 85       xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.bmi, xldl, I.x.2.ltg</span></span>
+<span id="cb7-324"><a href="#cb7-324" tabindex="-1"></a><span class="co">#&gt; 86  xbmi, xltg, xmap, I.x.2.glu, xhdl, I.x.2.sex, I.x.2.age, I.x.2.bmi, xldl, I.x.2.ltg</span></span>
+<span id="cb7-325"><a href="#cb7-325" tabindex="-1"></a><span class="co">#&gt; 87                  xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu, xhdl</span></span>
+<span id="cb7-326"><a href="#cb7-326" tabindex="-1"></a><span class="co">#&gt; 88             xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xglu, xhdl</span></span>
+<span id="cb7-327"><a href="#cb7-327" tabindex="-1"></a><span class="co">#&gt; 89                  xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, xldl, I.x.2.ltg</span></span>
+<span id="cb7-328"><a href="#cb7-328" tabindex="-1"></a><span class="co">#&gt; 90             xbmi, xltg, xmap, I.x.2.glu, xhdl, I.x.2.sex, I.x.2.age, xldl, I.x.2.ltg</span></span>
+<span id="cb7-329"><a href="#cb7-329" tabindex="-1"></a><span class="co">#&gt; 91       xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.sex, xldl, I.x.2.ltg</span></span>
+<span id="cb7-330"><a href="#cb7-330" tabindex="-1"></a><span class="co">#&gt; 92             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu, I.x.2.ldl</span></span>
+<span id="cb7-331"><a href="#cb7-331" tabindex="-1"></a><span class="co">#&gt; 93        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xglu, I.x.2.ldl</span></span>
+<span id="cb7-332"><a href="#cb7-332" tabindex="-1"></a><span class="co">#&gt; 94                              xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, xtc</span></span>
+<span id="cb7-333"><a href="#cb7-333" tabindex="-1"></a><span class="co">#&gt; 95                         xbmi, xltg, xmap, I.x.2.glu, xhdl, I.x.2.sex, I.x.2.age, xtc</span></span>
+<span id="cb7-334"><a href="#cb7-334" tabindex="-1"></a><span class="co">#&gt; 96                   xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.sex, xtc</span></span>
+<span id="cb7-335"><a href="#cb7-335" tabindex="-1"></a><span class="co">#&gt; 97             xbmi, xltg, xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, xglu, I.x.2.tch</span></span>
+<span id="cb7-336"><a href="#cb7-336" tabindex="-1"></a><span class="co">#&gt; 98        xbmi, xltg, xmap, I.x.2.glu, xtc, I.x.2.age, I.x.2.sex, xldl, xglu, I.x.2.tch</span></span>
+<span id="cb7-337"><a href="#cb7-337" tabindex="-1"></a><span class="co">#&gt; 99                        xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.bmi</span></span>
+<span id="cb7-338"><a href="#cb7-338" tabindex="-1"></a><span class="co">#&gt; 100                  xbmi, xltg, xmap, I.x.2.glu, xhdl, I.x.2.sex, I.x.2.age, I.x.2.bmi</span></span>
+<span id="cb7-339"><a href="#cb7-339" tabindex="-1"></a><span class="co">#&gt; 101            xbmi, xltg, xmap, I.x.2.glu, xsex, xhdl, I.x.2.age, I.x.2.sex, I.x.2.bmi</span></span>
+<span id="cb7-340"><a href="#cb7-340" tabindex="-1"></a><span class="co">#&gt;          aic  delta_aic avg_stability</span></span>
+<span id="cb7-341"><a href="#cb7-341" tabindex="-1"></a><span class="co">#&gt; 1   3822.544 0.00000000     0.6442083</span></span>
+<span id="cb7-342"><a href="#cb7-342" tabindex="-1"></a><span class="co">#&gt; 2   3822.544 0.00000000     0.6438543</span></span>
+<span id="cb7-343"><a href="#cb7-343" tabindex="-1"></a><span class="co">#&gt; 3   3822.544 0.00000000     0.6282031</span></span>
+<span id="cb7-344"><a href="#cb7-344" tabindex="-1"></a><span class="co">#&gt; 4   3822.559 0.01566925     0.6916829</span></span>
+<span id="cb7-345"><a href="#cb7-345" tabindex="-1"></a><span class="co">#&gt; 5   3822.559 0.01566925     0.6912847</span></span>
+<span id="cb7-346"><a href="#cb7-346" tabindex="-1"></a><span class="co">#&gt; 6   3822.559 0.01566925     0.6686244</span></span>
+<span id="cb7-347"><a href="#cb7-347" tabindex="-1"></a><span class="co">#&gt; 7   3823.456 0.91264253     0.6323308</span></span>
+<span id="cb7-348"><a href="#cb7-348" tabindex="-1"></a><span class="co">#&gt; 8   3823.456 0.91264253     0.6320122</span></span>
+<span id="cb7-349"><a href="#cb7-349" tabindex="-1"></a><span class="co">#&gt; 9   3823.830 1.28632306     0.5897462</span></span>
+<span id="cb7-350"><a href="#cb7-350" tabindex="-1"></a><span class="co">#&gt; 10  3823.830 1.28632306     0.5894276</span></span>
+<span id="cb7-351"><a href="#cb7-351" tabindex="-1"></a><span class="co">#&gt; 11  3823.964 1.42061757     0.6279932</span></span>
+<span id="cb7-352"><a href="#cb7-352" tabindex="-1"></a><span class="co">#&gt; 12  3823.964 1.42061757     0.6276393</span></span>
+<span id="cb7-353"><a href="#cb7-353" tabindex="-1"></a><span class="co">#&gt; 13  3823.964 1.42061757     0.6136096</span></span>
+<span id="cb7-354"><a href="#cb7-354" tabindex="-1"></a><span class="co">#&gt; 14  3823.978 1.43425039     0.6358270</span></span>
+<span id="cb7-355"><a href="#cb7-355" tabindex="-1"></a><span class="co">#&gt; 15  3823.978 1.43425039     0.6354730</span></span>
+<span id="cb7-356"><a href="#cb7-356" tabindex="-1"></a><span class="co">#&gt; 16  3823.978 1.43425039     0.6206600</span></span>
+<span id="cb7-357"><a href="#cb7-357" tabindex="-1"></a><span class="co">#&gt; 17  3824.121 1.57699786     0.6258945</span></span>
+<span id="cb7-358"><a href="#cb7-358" tabindex="-1"></a><span class="co">#&gt; 18  3824.121 1.57699786     0.6255405</span></span>
+<span id="cb7-359"><a href="#cb7-359" tabindex="-1"></a><span class="co">#&gt; 19  3824.121 1.57699786     0.6117207</span></span>
+<span id="cb7-360"><a href="#cb7-360" tabindex="-1"></a><span class="co">#&gt; 20  3824.200 1.65618878     0.5940214</span></span>
+<span id="cb7-361"><a href="#cb7-361" tabindex="-1"></a><span class="co">#&gt; 21  3824.200 1.65618878     0.5937028</span></span>
+<span id="cb7-362"><a href="#cb7-362" tabindex="-1"></a><span class="co">#&gt; 22  3824.216 1.67240724     0.6329305</span></span>
+<span id="cb7-363"><a href="#cb7-363" tabindex="-1"></a><span class="co">#&gt; 23  3824.216 1.67240724     0.6326120</span></span>
+<span id="cb7-364"><a href="#cb7-364" tabindex="-1"></a><span class="co">#&gt; 24  3824.226 1.68205514     0.6347923</span></span>
+<span id="cb7-365"><a href="#cb7-365" tabindex="-1"></a><span class="co">#&gt; 25  3824.226 1.68205514     0.6344383</span></span>
+<span id="cb7-366"><a href="#cb7-366" tabindex="-1"></a><span class="co">#&gt; 26  3824.226 1.68205514     0.6197287</span></span>
+<span id="cb7-367"><a href="#cb7-367" tabindex="-1"></a><span class="co">#&gt; 27  3824.290 1.74596933     0.6738771</span></span>
+<span id="cb7-368"><a href="#cb7-368" tabindex="-1"></a><span class="co">#&gt; 28  3824.290 1.74596933     0.6735231</span></span>
+<span id="cb7-369"><a href="#cb7-369" tabindex="-1"></a><span class="co">#&gt; 29  3824.290 1.74596933     0.6549050</span></span>
+<span id="cb7-370"><a href="#cb7-370" tabindex="-1"></a><span class="co">#&gt; 30  3824.331 1.78728594     0.6306447</span></span>
+<span id="cb7-371"><a href="#cb7-371" tabindex="-1"></a><span class="co">#&gt; 31  3824.331 1.78728594     0.6302907</span></span>
+<span id="cb7-372"><a href="#cb7-372" tabindex="-1"></a><span class="co">#&gt; 32  3824.331 1.78728594     0.6159959</span></span>
+<span id="cb7-373"><a href="#cb7-373" tabindex="-1"></a><span class="co">#&gt; 33  3824.426 1.88285205     0.5916653</span></span>
+<span id="cb7-374"><a href="#cb7-374" tabindex="-1"></a><span class="co">#&gt; 34  3824.426 1.88285205     0.5913468</span></span>
+<span id="cb7-375"><a href="#cb7-375" tabindex="-1"></a><span class="co">#&gt; 35  3824.433 1.88899110     0.6290813</span></span>
+<span id="cb7-376"><a href="#cb7-376" tabindex="-1"></a><span class="co">#&gt; 36  3824.433 1.88899110     0.6287274</span></span>
+<span id="cb7-377"><a href="#cb7-377" tabindex="-1"></a><span class="co">#&gt; 37  3824.433 1.88899110     0.6145889</span></span>
+<span id="cb7-378"><a href="#cb7-378" tabindex="-1"></a><span class="co">#&gt; 38  3824.443 1.89921953     0.6280268</span></span>
+<span id="cb7-379"><a href="#cb7-379" tabindex="-1"></a><span class="co">#&gt; 39  3824.443 1.89921953     0.6276729</span></span>
+<span id="cb7-380"><a href="#cb7-380" tabindex="-1"></a><span class="co">#&gt; 40  3824.443 1.89921953     0.6136398</span></span>
+<span id="cb7-381"><a href="#cb7-381" tabindex="-1"></a><span class="co">#&gt; 41  3824.742 2.19859548     0.6244561</span></span>
+<span id="cb7-382"><a href="#cb7-382" tabindex="-1"></a><span class="co">#&gt; 42  3824.742 2.19859548     0.6241376</span></span>
+<span id="cb7-383"><a href="#cb7-383" tabindex="-1"></a><span class="co">#&gt; 43  3825.516 2.97270104     0.5822030</span></span>
+<span id="cb7-384"><a href="#cb7-384" tabindex="-1"></a><span class="co">#&gt; 44  3825.516 2.97270104     0.5818845</span></span>
+<span id="cb7-385"><a href="#cb7-385" tabindex="-1"></a><span class="co">#&gt; 45  3825.589 3.04526440     0.7137469</span></span>
+<span id="cb7-386"><a href="#cb7-386" tabindex="-1"></a><span class="co">#&gt; 46  3825.589 3.04526440     0.7132918</span></span>
+<span id="cb7-387"><a href="#cb7-387" tabindex="-1"></a><span class="co">#&gt; 47  3825.638 3.09390906     0.5751526</span></span>
+<span id="cb7-388"><a href="#cb7-388" tabindex="-1"></a><span class="co">#&gt; 48  3825.638 3.09390906     0.5748341</span></span>
+<span id="cb7-389"><a href="#cb7-389" tabindex="-1"></a><span class="co">#&gt; 49  3825.681 3.13751714     0.5794278</span></span>
+<span id="cb7-390"><a href="#cb7-390" tabindex="-1"></a><span class="co">#&gt; 50  3825.681 3.13751714     0.5791093</span></span>
+<span id="cb7-391"><a href="#cb7-391" tabindex="-1"></a><span class="co">#&gt; 51  3825.731 3.18783182     0.5864782</span></span>
+<span id="cb7-392"><a href="#cb7-392" tabindex="-1"></a><span class="co">#&gt; 52  3825.731 3.18783182     0.5861596</span></span>
+<span id="cb7-393"><a href="#cb7-393" tabindex="-1"></a><span class="co">#&gt; 53  3825.735 3.19119517     0.6253873</span></span>
+<span id="cb7-394"><a href="#cb7-394" tabindex="-1"></a><span class="co">#&gt; 54  3825.735 3.19119517     0.6250688</span></span>
+<span id="cb7-395"><a href="#cb7-395" tabindex="-1"></a><span class="co">#&gt; 55  3825.751 3.20773132     0.6299514</span></span>
+<span id="cb7-396"><a href="#cb7-396" tabindex="-1"></a><span class="co">#&gt; 56  3825.751 3.20773132     0.6295975</span></span>
+<span id="cb7-397"><a href="#cb7-397" tabindex="-1"></a><span class="co">#&gt; 57  3825.751 3.20773132     0.6153720</span></span>
+<span id="cb7-398"><a href="#cb7-398" tabindex="-1"></a><span class="co">#&gt; 58  3825.757 3.21381654     0.5812718</span></span>
+<span id="cb7-399"><a href="#cb7-399" tabindex="-1"></a><span class="co">#&gt; 59  3825.757 3.21381654     0.5809532</span></span>
+<span id="cb7-400"><a href="#cb7-400" tabindex="-1"></a><span class="co">#&gt; 60  3825.803 3.25955629     0.6183370</span></span>
+<span id="cb7-401"><a href="#cb7-401" tabindex="-1"></a><span class="co">#&gt; 61  3825.803 3.25955629     0.6180184</span></span>
+<span id="cb7-402"><a href="#cb7-402" tabindex="-1"></a><span class="co">#&gt; 62  3825.872 3.32829782     0.5841221</span></span>
+<span id="cb7-403"><a href="#cb7-403" tabindex="-1"></a><span class="co">#&gt; 63  3825.872 3.32829782     0.5838036</span></span>
+<span id="cb7-404"><a href="#cb7-404" tabindex="-1"></a><span class="co">#&gt; 64  3825.873 3.32906353     0.5770718</span></span>
+<span id="cb7-405"><a href="#cb7-405" tabindex="-1"></a><span class="co">#&gt; 65  3825.873 3.32906353     0.5767532</span></span>
+<span id="cb7-406"><a href="#cb7-406" tabindex="-1"></a><span class="co">#&gt; 66  3825.904 3.36027486     0.5804071</span></span>
+<span id="cb7-407"><a href="#cb7-407" tabindex="-1"></a><span class="co">#&gt; 67  3825.904 3.36027486     0.5800886</span></span>
+<span id="cb7-408"><a href="#cb7-408" tabindex="-1"></a><span class="co">#&gt; 68  3825.917 3.37309077     0.6248313</span></span>
+<span id="cb7-409"><a href="#cb7-409" tabindex="-1"></a><span class="co">#&gt; 69  3825.917 3.37309077     0.6251499</span></span>
+<span id="cb7-410"><a href="#cb7-410" tabindex="-1"></a><span class="co">#&gt; 70  3825.923 3.37930357     0.5785891</span></span>
+<span id="cb7-411"><a href="#cb7-411" tabindex="-1"></a><span class="co">#&gt; 71  3825.923 3.37930357     0.5782705</span></span>
+<span id="cb7-412"><a href="#cb7-412" tabindex="-1"></a><span class="co">#&gt; 72  3825.931 3.38740310     0.6652319</span></span>
+<span id="cb7-413"><a href="#cb7-413" tabindex="-1"></a><span class="co">#&gt; 73  3825.931 3.38740310     0.6648780</span></span>
+<span id="cb7-414"><a href="#cb7-414" tabindex="-1"></a><span class="co">#&gt; 74  3825.931 3.38740310     0.6471244</span></span>
+<span id="cb7-415"><a href="#cb7-415" tabindex="-1"></a><span class="co">#&gt; 75  3825.954 3.41011987     0.5855470</span></span>
+<span id="cb7-416"><a href="#cb7-416" tabindex="-1"></a><span class="co">#&gt; 76  3825.954 3.41011987     0.5852284</span></span>
+<span id="cb7-417"><a href="#cb7-417" tabindex="-1"></a><span class="co">#&gt; 77  3825.958 3.41403473     0.5775389</span></span>
+<span id="cb7-418"><a href="#cb7-418" tabindex="-1"></a><span class="co">#&gt; 78  3825.958 3.41403473     0.5772204</span></span>
+<span id="cb7-419"><a href="#cb7-419" tabindex="-1"></a><span class="co">#&gt; 79  3826.050 3.50591969     0.5751829</span></span>
+<span id="cb7-420"><a href="#cb7-420" tabindex="-1"></a><span class="co">#&gt; 80  3826.050 3.50591969     0.5748643</span></span>
+<span id="cb7-421"><a href="#cb7-421" tabindex="-1"></a><span class="co">#&gt; 81  3826.061 3.51768980     0.6207233</span></span>
+<span id="cb7-422"><a href="#cb7-422" tabindex="-1"></a><span class="co">#&gt; 82  3826.061 3.51768980     0.6204047</span></span>
+<span id="cb7-423"><a href="#cb7-423" tabindex="-1"></a><span class="co">#&gt; 83  3826.124 3.58005701     0.5831909</span></span>
+<span id="cb7-424"><a href="#cb7-424" tabindex="-1"></a><span class="co">#&gt; 84  3826.124 3.58005701     0.5828724</span></span>
+<span id="cb7-425"><a href="#cb7-425" tabindex="-1"></a><span class="co">#&gt; 85  3826.156 3.61239368     0.6005783</span></span>
+<span id="cb7-426"><a href="#cb7-426" tabindex="-1"></a><span class="co">#&gt; 86  3826.156 3.61239368     0.6002598</span></span>
+<span id="cb7-427"><a href="#cb7-427" tabindex="-1"></a><span class="co">#&gt; 87  3826.179 3.63546920     0.6183672</span></span>
+<span id="cb7-428"><a href="#cb7-428" tabindex="-1"></a><span class="co">#&gt; 88  3826.179 3.63546920     0.6180487</span></span>
+<span id="cb7-429"><a href="#cb7-429" tabindex="-1"></a><span class="co">#&gt; 89  3826.222 3.67854181     0.6379302</span></span>
+<span id="cb7-430"><a href="#cb7-430" tabindex="-1"></a><span class="co">#&gt; 90  3826.222 3.67854181     0.6375762</span></span>
+<span id="cb7-431"><a href="#cb7-431" tabindex="-1"></a><span class="co">#&gt; 91  3826.222 3.67854181     0.6225528</span></span>
+<span id="cb7-432"><a href="#cb7-432" tabindex="-1"></a><span class="co">#&gt; 92  3826.223 3.67927996     0.5794581</span></span>
+<span id="cb7-433"><a href="#cb7-433" tabindex="-1"></a><span class="co">#&gt; 93  3826.223 3.67927996     0.5791395</span></span>
+<span id="cb7-434"><a href="#cb7-434" tabindex="-1"></a><span class="co">#&gt; 94  3826.316 3.77234125     0.7160841</span></span>
+<span id="cb7-435"><a href="#cb7-435" tabindex="-1"></a><span class="co">#&gt; 95  3826.316 3.77234125     0.7156859</span></span>
+<span id="cb7-436"><a href="#cb7-436" tabindex="-1"></a><span class="co">#&gt; 96  3826.316 3.77234125     0.6903144</span></span>
+<span id="cb7-437"><a href="#cb7-437" tabindex="-1"></a><span class="co">#&gt; 97  3826.329 3.78571988     0.5780511</span></span>
+<span id="cb7-438"><a href="#cb7-438" tabindex="-1"></a><span class="co">#&gt; 98  3826.329 3.78571988     0.5777325</span></span>
+<span id="cb7-439"><a href="#cb7-439" tabindex="-1"></a><span class="co">#&gt; 99  3826.492 3.94804854     0.6763936</span></span>
+<span id="cb7-440"><a href="#cb7-440" tabindex="-1"></a><span class="co">#&gt; 100 3826.492 3.94804854     0.6759954</span></span>
+<span id="cb7-441"><a href="#cb7-441" tabindex="-1"></a><span class="co">#&gt; 101 3826.492 3.94804854     0.6550339</span></span></code></pre></div>
+<p>We combine AIC and stability to identify plausible models. Models
+must be within <code>Delta = 4</code> AIC units of the best and have
+average stability <code>tau ≥ 0.5</code>. This filters for models that
+are both statistically competitive and robustly selected.</p>
+</div>
+<div id="visualizations" class="section level2">
+<h2>Visualizations</h2>
+<div id="aic-progression" class="section level3">
+<h3>AIC Progression</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">plot_aic_by_step</span>(paths)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>The AIC curve shows rapid improvement in early steps, indicating
+strong predictive signals. The curve flattens after 6-8 predictors,
+suggesting diminishing returns from additional variables.</p>
+</div>
+<div id="stability-scores" class="section level3">
+<h3>Stability Scores</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">plot_stability</span>(stab, <span class="at">threshold =</span> <span class="fl">0.6</span>)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+<p>Predictors above the threshold line (π &gt; 0.6) are consistently
+selected across resamples, indicating reliable contributions to the
+model. These stable predictors are strong candidates for the final
+model.</p>
+</div>
+</div>
+<div id="test-performance" class="section level2">
+<h2>Test Performance</h2>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Get best model variables</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>selected_vars <span class="ot">&lt;-</span> plaus<span class="sc">$</span>variables[[<span class="dv">1</span>]]</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">is.character</span>(selected_vars) <span class="sc">&amp;&amp;</span> <span class="fu">length</span>(selected_vars) <span class="sc">==</span> <span class="dv">1</span>) {</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  selected_vars <span class="ot">&lt;-</span> <span class="fu">trimws</span>(<span class="fu">strsplit</span>(selected_vars, <span class="st">&quot;,&quot;</span>)[[<span class="dv">1</span>]])</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>}</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co"># Fit model on training data</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>X_train_sel <span class="ot">&lt;-</span> X_train[, selected_vars, drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">y =</span> y_train, X_train_sel)</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">lm</span>(y <span class="sc">~</span> ., <span class="at">data =</span> train_data)</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co"># Test predictions</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>X_test_sel <span class="ot">&lt;-</span> X_test[, selected_vars, drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(X_test_sel)</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>y_pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, <span class="at">newdata =</span> test_data)</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co"># Calculate metrics</span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>rmse_test <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">mean</span>((y_test <span class="sc">-</span> y_pred)<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>r2_test <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">sum</span>((y_test <span class="sc">-</span> y_pred)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="fu">sum</span>((y_test <span class="sc">-</span> <span class="fu">mean</span>(y_test))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Test RMSE:&quot;</span>, <span class="fu">round</span>(rmse_test, <span class="dv">2</span>)))</span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Test RMSE: 52.07&quot;</span></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Test R²:&quot;</span>, <span class="fu">round</span>(r2_test, <span class="dv">4</span>)))</span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Test R²: 0.542&quot;</span></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste</span>(<span class="st">&quot;Model size:&quot;</span>, <span class="fu">length</span>(selected_vars), <span class="st">&quot;predictors&quot;</span>))</span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Model size: 9 predictors&quot;</span></span></code></pre></div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>This analysis demonstrates the multipathaic workflow:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Feature Engineering</strong>: Expanded 10 baseline
+predictors to 60 features including quadratic and interaction terms</li>
+<li><strong>Multi-Path Search</strong>: Explored multiple competitive
+models simultaneously rather than a single path</li>
+<li><strong>Stability Analysis</strong>: Identified robust predictors
+via bootstrap resampling (B = 20)</li>
+<li><strong>Plausible Models</strong>: Combined AIC and stability
+criteria to filter reliable models</li>
+<li><strong>Validation</strong>: Evaluated on held-out test set to
+confirm generalization</li>
+</ol>
+<p><strong>Key Findings:</strong> - Selected predictors: xbmi, xltg,
+xmap, I.x.2.glu, xtc, xsex, xldl, I.x.2.age, I.x.2.bmi - Test RMSE
+indicates good predictive performance - Stable predictors align with
+known diabetes risk factors</p>
+<p><strong>Advantages:</strong> - Explores model uncertainty rather than
+committing to a single path - Stability scores reveal which predictors
+are robust across data variations - Provides transparent set of
+plausible alternatives</p>
+<hr />
+<p><strong>Package:</strong> multipathaic<br />
+<strong>GitHub:</strong> <a href="https://github.com/R-4-Data-Science/Final_Project_multipathaic" class="uri">https://github.com/R-4-Data-Science/Final_Project_multipathaic</a></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
