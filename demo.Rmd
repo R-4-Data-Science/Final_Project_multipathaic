@@ -1,6 +1,6 @@
 ---
 title: "Multi-Path Stepwise Selection with AIC"
-subtitle: "Final Project: STAT 7020 - Advanced Statistical Computing"
+subtitle: "Final Project: STAT 7020"
 author: "Michael Asante Ofosu, Mohammad Al Srayheen, Soroosh Alavi"
 date: "`r Sys.Date()`"
 output:
@@ -25,28 +25,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-<div style="background-color: #ffe6e6; border-left: 5px solid #ff0000; padding: 15px; margin: 20px 0;">
-**IMPORTANT: Before Knitting This Document**
-
-1. **Restart R Session:** `Session → Restart R` (or Ctrl+Shift+F10)
-2. **Reinstall Package:** 
-```r
-# Remove old version
-remove.packages("multipathaic")
-
-# Reinstall from your local directory
-install.packages("/path/to/multipathaic", repos = NULL, type = "source")
-# OR from GitHub:
-# remotes::install_github("R-4-Data-Science/Final_Project_multipathaic", force = TRUE)
-```
-3. **Load Fresh:** `library(multipathaic)`
-4. **Then Knit:** Click "Knit" button
-
-**Why?** Cached old function definitions can cause parameter errors even if the code is correct.
-</div>
-
----
-
 # GitHub Repository Information
 
 **Repository Name:** `multipathaic`  
@@ -59,9 +37,6 @@ install.packages("/path/to/multipathaic", repos = NULL, type = "source")
 remotes::install_github("R-4-Data-Science/Final_Project_multipathaic")
 ```
 
----
-
-# Executive Summary
 
 This project implements a novel multi-path forward selection algorithm with resampling-based stability analysis and plausible model identification. Unlike traditional stepwise selection that follows a single path, **multipathaic** explores multiple near-optimal paths simultaneously, providing:
 
@@ -71,7 +46,7 @@ This project implements a novel multi-path forward selection algorithm with resa
 
 The package supports both **linear regression** (Gaussian) and **logistic regression** (Binomial) families.
 
----
+
 
 # 1. Package Overview
 
@@ -101,7 +76,7 @@ The package includes multiple plotting functions for publication-quality figures
 
 **All plotting functions support customization** for publication-quality figures.
 
----
+
 
 # 2. Algorithm Description
 
@@ -157,7 +132,6 @@ The package includes multiple plotting functions for publication-quality figures
 4. **(Optional)** Remove near-duplicates using Jaccard similarity
 5. **Output:** Final set of plausible models
 
----
 
 # 3. Demonstrations with Base R
 
@@ -242,7 +216,7 @@ abline(h = 0, lty = 2, col = "red")
 - Variable **x5** (β₅ = 1) also improves AIC substantially
 - Variables x3, x4, x6, x7, x8 (all βⱼ = 0) provide minimal improvement
 
----
+
 
 ## 3.2 Logistic Regression Example (Binomial Family)
 
@@ -327,7 +301,7 @@ abline(h = 0, lty = 2, col = "red")
 - These match the true predictors (coefficients: 1.2, -1.0, 0.8)
 - Variables x3, x4, x6 (not in true model) show minimal improvement
 
----
+
 
 # 4. Using the multipathaic Package
 
@@ -517,7 +491,7 @@ legend("topright", legend = c("Stable (>0.5)", "Unstable", "Threshold"),
 
 **Interpretation:** The importance score combines stability, appearance frequency, and AIC performance to rank variables by overall relevance.
 
----
+
 
 ## 4.2 Logistic Regression: Complete Workflow
 
@@ -650,7 +624,6 @@ legend("topright", legend = c("Stable (>0.5)", "Unstable", "Threshold"),
        lty = c(NA, NA, 2), col = c(NA, NA, "red"), lwd = c(NA, NA, 2))
 ```
 
----
 
 # 5. Parameter Interpretation and Recommendations
 
@@ -693,7 +666,7 @@ legend("topright", legend = c("Stable (>0.5)", "Unstable", "Threshold"),
 - tau = 0.6: Require models built from reasonably stable variables
 - Jaccard = 0.8: Remove models with 80%+ variable overlap
 
----
+
 
 # 6. Interactive Shiny Application
 
@@ -739,7 +712,7 @@ The Shiny app provides a complete point-and-click interface with:
 
 **This makes `multipathaic` accessible to researchers without R programming experience.**
 
----
+
 
 # 7. Key Findings and Conclusions
 
@@ -766,7 +739,7 @@ The Shiny app provides a complete point-and-click interface with:
 3. **Model Uncertainty:** Quantifies uncertainty through plausible model sets
 4. **Transparency:** Provides full path history and selection frequencies
 
----
+
 
 # 8. Technical Implementation Notes
 

@@ -227,7 +227,6 @@ This analysis demonstrates the multipathaic workflow:
 - Stability scores reveal which predictors are robust across data variations
 - Provides transparent set of plausible alternatives
 
----
 
 **Package:** multipathaic  
 **GitHub:** https://github.com/R-4-Data-Science/Final_Project_multipathaic
