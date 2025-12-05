@@ -517,7 +517,7 @@ ui <- dashboardPage(
         }
 
         table.dataTable thead {
-          background: linear-gradient(135deg, ", app_colors$primary, " 0%, ", app_colors$accent, " 100%) !important;
+          background-color: ", app_colors$primary, " !important;
           color: white !important;
         }
 
